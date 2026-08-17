@@ -1,6 +1,6 @@
 {
   "name": "@double-coding/flow2spec-deepseek-harness",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Native DeepSeek Harness plugin for Flow2Spec",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,8 +15,14 @@
   "files": [
     "dist",
     "README.md",
+    "cordis.patch.yml",
     "examples"
   ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",

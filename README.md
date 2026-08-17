@@ -1,39 +1,48 @@
 # Flow2Spec for DeepSeek Harness
 
-Flow2Spec 的 DeepSeek Harness 原生插件。Harness 用户安装并启用插件后即可获得 Flow2Spec 的项目知识路由、Skills、原生 Hooks、命令、工具、协作身份和 Doctor，无需再执行 `npx flow2spec init`。
+把 Flow2Spec 的项目知识路由接入 DeepSeek Harness 的原生 Agent 生命周期。安装插件后，Harness 可以在请求进入工具和步骤执行前，按项目事实加载有限上下文；Core 仍是唯一业务能力来源。
 
-Flow2Spec Core 仍是唯一业务能力来源。Cursor、Claude Code、Codex 等其他 AI 开发工具继续使用原有 Flow2Spec CLI，二者共享同一套 `.Knowledge/` 和 `flow2spec.config.json`。
+其他 AI 开发工具继续使用原有 Flow2Spec CLI，并与 Harness 共享同一套 `.Knowledge/` 和 `flow2spec.config.json`。
 
-> DeepSeek Harness 当前仍处于开发者预览阶段。本插件 `1.0.0` 固定验证 `@deepseek-ai/dsh@0.1.0-rc.6`、Cordis `4.0.1` 和 Flow2Spec Core `3.4.x`。
+<p align="center">
+  <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness"><img src="https://img.shields.io/npm/v/%40double-coding%2Fflow2spec-deepseek-harness?logo=npm&label=npm" alt="npm version"></a>
+  <a href="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml"><img src="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.6-202c2c" alt="DeepSeek Harness 0.1.0-rc.6">
+  <img src="https://img.shields.io/badge/Node.js-22.19%2B%20%7C%2024%2B-43853d" alt="Node.js 22.19 or newer">
+</p>
+
+<p align="center">
+  <img src="./assets/readme/workflow.svg" width="100%" alt="Flow2Spec routes a Harness request through match, verify, and loadContext before native hooks and tools use project knowledge">
+</p>
+
+> DeepSeek Harness 当前仍处于开发者预览阶段。本插件 `1.0.1` 固定验证 `@deepseek-ai/dsh@0.1.0-rc.6`、Cordis `4.0.1` 和 Flow2Spec Core `3.4.x`。
 
 ## 安装
 
 要求 Node.js `^22.19.0 || >=24.0.0`。
 
+将插件安装到要使用的 Harness profile：
+
 ```bash
-npm install @double-coding/flow2spec-deepseek-harness
+dsh plugin --profile <profile> add @double-coding/flow2spec-deepseek-harness
 ```
 
-在 Harness 的 `cordis.yml` 插件列表中加入：
+插件包自带 Harness `dsh.bundle` manifest 和 `cordis.patch.yml`。`dsh plugin` 会自动维护 profile 的依赖与 bundle 列表，用户无需手工编辑 Harness 的 `cordis.yml`。可先检查组合后的配置，再启动该 profile：
 
-```yaml
-- id: flow2spec
-  name: '@double-coding/flow2spec-deepseek-harness'
-  config:
-    autoInitialize: true
+```bash
+dsh --profile <profile> --dump-config
+dsh --profile <profile>
 ```
 
-完整配置见 [`examples/cordis.yml`](examples/cordis.yml)。首次 Session 会以 `native-host` 模式增量建立项目基线；不会生成 `.dsh/skills`，也不会覆盖已有业务知识。
+首次 Session 会以 `native-host` 模式增量建立项目基线，不会生成 `.dsh/skills`，也不会覆盖已有业务知识。
 
 ## 能力
 
-- 通过 `ctx.skills.registerProvider()` 提供 Core 中的全部 Flow2Spec Skills。
-- 按 `match -> expand -> verify -> loadContext` 注入有限、可追溯的项目上下文。
-- 使用 `agent/session-start`、`agent/pre-step`、`agent/request`、`tools/pre-execute`、`tools/result` 和 `session/event` 原生扩展点。
-- 自动解析 `developerId` 与 `.task/<developerId>/`，共享 `.Knowledge/` 事实层。
-- 监听配置与知识库变化，及时失效路由和 Skill 缓存。
-- Doctor 识别宿主/Core 不兼容、路由问题和旧 `.dsh/skills/f2s-*` 覆盖。
-- 卸载只注销 Provider、命令、工具和监听器，不删除项目知识、配置、任务或用户 DSH 内容。
+- **有限上下文**：按 `match -> expand -> verify -> loadContext` 路由项目事实，再注入 Agent 上下文。
+- **原生生命周期**：接入 `agent/session-start`、`agent/pre-step`、`agent/request`、`tools/pre-execute`、`tools/result` 和 `session/event`。
+- **受控工具面**：提供路由、诊断、知识库状态/检查，以及带 `planHash` 和 revision 保护的知识写入工具。
+- **协作与诊断**：解析 `developerId` 与 `.task/<developerId>/`，共享 `.Knowledge/`，并识别宿主/Core 不兼容和旧 `.dsh/skills/f2s-*` 覆盖。
+- **可卸载**：只注销 Provider、命令、工具和监听器，不删除项目知识、配置、任务或用户 DSH 内容。
 
 ## 命令
 
@@ -83,7 +92,7 @@ npm run check
 npm run pack:install
 ```
 
-`npm run pack:install` 会分别打包本地 Core 和插件，在临时目录完成真实安装与 ESM 入口验证。
+`npm run pack:install` 会分别打包本地 Core 和插件，在临时目录完成真实安装、ESM 入口和 Harness bundle manifest 验证。
 
 ## 兼容矩阵
 

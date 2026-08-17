@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const pluginRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const sourcePackage = JSON.parse(readFileSync(join(pluginRoot, 'package.json'), 'utf8'))
 const coreRoot = resolve(pluginRoot, '..', 'Flow2Spec', 'packages', 'core')
 const sandbox = mkdtempSync(join(tmpdir(), 'flow2spec-dsh-pack-'))
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -32,8 +33,15 @@ try {
   if (plugin.name !== 'flow2spec' || typeof plugin.apply !== 'function') {
     throw new Error('packed plugin entry does not expose the Cordis contract')
   }
-  const pkg = JSON.parse(readFileSync(join(dirname(entry), '..', 'package.json'), 'utf8'))
-  if (pkg.version !== '1.0.0') throw new Error(`unexpected packed version: ${pkg.version}`)
+  const packageRoot = join(dirname(entry), '..')
+  const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
+  if (pkg.version !== sourcePackage.version) throw new Error(`unexpected packed version: ${pkg.version}`)
+  if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') {
+    throw new Error('packed plugin does not declare the Harness bundle patch')
+  }
+  if (!existsSync(join(packageRoot, 'cordis.patch.yml'))) {
+    throw new Error('packed plugin does not include cordis.patch.yml')
+  }
   console.log('test-package-install: ok')
 } finally {
   rmSync(sandbox, { recursive: true, force: true })

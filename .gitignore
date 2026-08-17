@@ -1,0 +1,10 @@
+# Node / TypeScript
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+
+# Flow2Spec local state
+.task/
+.Knowledge/update-check.json

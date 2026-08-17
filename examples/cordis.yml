@@ -1,0 +1,23 @@
+- id: flow2spec
+  name: '@double-coding/flow2spec-deepseek-harness'
+  config:
+    autoInitialize: true
+    locale: auto
+    strictCompatibility: true
+    skills:
+      enabled: true
+      rank: 250
+    routing:
+      enabled: true
+      injectContext: true
+      maxFiles: 20
+      maxLines: 400
+    hooks:
+      sessionSummary: true
+      updateCheck: true
+      configPrecheck: true
+    commands:
+      enabled: true
+    tools:
+      readOnly: true
+      knowledgeWrite: true

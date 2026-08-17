@@ -1,4 +1,12 @@
-import { existsSync, readFileSync, readdirSync, watch, type FSWatcher } from 'node:fs'
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  unwatchFile,
+  watch,
+  watchFile,
+  type Stats,
+} from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -21,7 +29,7 @@ export class Flow2SpecPluginRuntime {
   readonly projects: ProjectRuntimeManager
   readonly routes = new RoutingContextStore<Agent>()
   private readonly agents = new Map<Agent, ProjectRuntime>()
-  private readonly watchers = new Map<string, FSWatcher[]>()
+  private readonly watchers = new Map<string, CloseableWatcher[]>()
   private readonly config: ResolvedFlow2SpecPluginConfig
 
   constructor(config: ResolvedFlow2SpecPluginConfig) {
@@ -136,6 +144,13 @@ export class Flow2SpecPluginRuntime {
 
   private ensureWatchers(root: string): void {
     if (this.watchers.has(root)) return
+    if (usePollingWatchers()) {
+      const watchers = pollingWatchPaths(root).map(path => createPollingWatcher(path, () => {
+        this.invalidate(root)
+      }))
+      this.watchers.set(root, watchers)
+      return
+    }
     const paths = [
       root,
       join(root, '.Knowledge'),
@@ -149,6 +164,48 @@ export class Flow2SpecPluginRuntime {
       this.invalidate(root)
     }))
     this.watchers.set(root, watchers)
+  }
+}
+
+interface CloseableWatcher {
+  close(): void
+}
+
+function usePollingWatchers(): boolean {
+  const nodeMajor = Number.parseInt(process.versions.node.split('.')[0] ?? '0', 10)
+  return process.platform === 'win32' && nodeMajor >= 24
+}
+
+function pollingWatchPaths(root: string): string[] {
+  const knowledgeRoot = join(root, '.Knowledge')
+  const directories = [
+    knowledgeRoot,
+    join(knowledgeRoot, 'topics'),
+    join(knowledgeRoot, 'matchers'),
+  ].filter(path => existsSync(path))
+  const files = [
+    join(root, 'flow2spec.config.json'),
+    join(knowledgeRoot, 'manifest-routing.json'),
+    ...directories.flatMap(directory => {
+      try {
+        return readdirSync(directory, { withFileTypes: true })
+          .filter(entry => entry.isFile() && entry.name !== 'update-check.json')
+          .map(entry => join(directory, entry.name))
+      } catch {
+        return []
+      }
+    }),
+  ].filter(path => existsSync(path))
+  return [...new Set([...directories, ...files])]
+}
+
+function createPollingWatcher(path: string, onChange: () => void): CloseableWatcher {
+  const listener = (current: Stats, previous: Stats): void => {
+    if (current.mtimeMs !== previous.mtimeMs || current.size !== previous.size) onChange()
+  }
+  watchFile(path, { interval: 1_000, persistent: false }, listener)
+  return {
+    close: () => unwatchFile(path, listener),
   }
 }
 

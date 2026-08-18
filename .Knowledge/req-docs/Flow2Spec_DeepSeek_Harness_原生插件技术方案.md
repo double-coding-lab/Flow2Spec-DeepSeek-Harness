@@ -32,12 +32,12 @@ Flow2Spec 已通过 `flow2spec init dsh` 支持 DeepSeek Harness 的项目级配
 
 | 组件 | 基线 | 用途 |
 | --- | --- | --- |
-| DeepSeek Harness CLI | `@deepseek-ai/dsh@0.1.0-rc.6` | 集成与端到端验证宿主 |
+| DeepSeek Harness CLI | `@deepseek-ai/dsh@0.1.0-rc.7` | 集成与端到端验证宿主 |
 | DeepSeek Harness 源码 | `master@47f943859bef60e4160492346772ded9b24f765a` | 官方插件、事件和配置契约快照 |
 | Cordis | `@deepseek-ai/cordis@4.0.1` | 插件生命周期与依赖注入 |
-| DSH Skill | `@deepseek-ai/dsh-skill@0.1.0-rc.6` | Skill Provider 类型 |
-| DSH Commands | `@deepseek-ai/dsh-commands@0.1.0-rc.6` | 人类命令注册 |
-| DSH System Prompt | `@deepseek-ai/dsh-system-prompt@0.1.0-rc.6` | 动态路由上下文注入 |
+| DSH Skill | `@deepseek-ai/dsh-skill@0.1.0-rc.7` | Skill Provider 类型 |
+| DSH Commands | `@deepseek-ai/dsh-commands@0.1.0-rc.7` | 人类命令注册 |
+| DSH System Prompt | `@deepseek-ai/dsh-system-prompt@0.1.0-rc.7` | 动态路由上下文注入 |
 | Flow2Spec Core | `@double-coding/flow2spec-core@3.3.1` | 当前能力基线；插件开发前按下文补充公共契约 |
 | Node.js | `^22.19.0 || >=24.0.0` | 与 Harness 当前引擎要求一致 |
 
@@ -540,7 +540,7 @@ DSH rc 依赖在开发和 CI lockfile 中锁定精确版本。npm peer range只�
 
 ### Harness 集成测试
 
-- 使用 `@deepseek-ai/dsh@0.1.0-rc.6` 和发布前最新受支持版本各跑一套。
+- 使用 `@deepseek-ai/dsh@0.1.0-rc.7` 和发布前最新受支持版本各跑一套。
 - Cordis 加载、配置校验、Fiber dispose 和热重载。
 - `ctx.skills.list/get` 能发现并加载全部 Flow2Spec Skills。
 - 项目 `.dsh/skills` 对同名插件 Skill 的覆盖符合 rank 设计。

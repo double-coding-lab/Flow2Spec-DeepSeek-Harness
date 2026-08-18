@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness"><img src="https://img.shields.io/npm/v/%40double-coding%2Fflow2spec-deepseek-harness?logo=npm&label=npm" alt="npm version"></a>
   <a href="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml"><img src="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.6-202c2c" alt="DeepSeek Harness 0.1.0-rc.6">
+  <img src="https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.7-202c2c" alt="DeepSeek Harness 0.1.0-rc.7">
   <img src="https://img.shields.io/badge/Node.js-22.19%2B%20%7C%2024%2B-43853d" alt="Node.js 22.19 or newer">
 </p>
 
@@ -15,7 +15,7 @@
   <img src="./assets/readme/workflow.svg" width="100%" alt="Flow2Spec routes a Harness request through match, verify, and loadContext before native hooks and tools use project knowledge">
 </p>
 
-> DeepSeek Harness 当前仍处于开发者预览阶段。本插件 `1.0.1` 固定验证 `@deepseek-ai/dsh@0.1.0-rc.6`、Cordis `4.0.1` 和 Flow2Spec Core `3.4.x`。
+> DeepSeek Harness 当前仍处于开发者预览阶段。本插件 `1.0.2` 固定验证 `@deepseek-ai/dsh@0.1.0-rc.7`、Cordis `4.0.1` 和 Flow2Spec Core `3.4.x`。
 
 ## 安装
 
@@ -98,7 +98,7 @@ npm run pack:install
 
 | 插件 | Flow2Spec Core | DeepSeek Harness | Cordis | Node.js |
 | --- | --- | --- | --- | --- |
-| `1.0.x` | `3.4.x` | `0.1.0-rc.6` | `4.0.1` | `22.19+` / `24+` |
+| `1.0.2` | `3.4.x` | `0.1.0-rc.7` | `4.0.1` | `22.19+` / `24+` |
 
 升级 Harness rc 版本前必须重新运行完整 CI、Cordis 加载/卸载、Provider、路由、命令、工具和 npm pack 安装测试。
 

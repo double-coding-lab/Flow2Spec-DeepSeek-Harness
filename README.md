@@ -15,7 +15,7 @@
   <img src="./assets/readme/workflow.svg" width="100%" alt="Flow2Spec routes a Harness request through match, verify, and loadContext before native hooks and tools use project knowledge">
 </p>
 
-> DeepSeek Harness 当前仍处于开发者预览阶段。本插件 `1.0.2` 固定验证 `@deepseek-ai/dsh@0.1.0-rc.7`、Cordis `4.0.1` 和 Flow2Spec Core `3.4.x`。
+> DeepSeek Harness 当前仍处于开发者预览阶段。本插件 `1.1.0` 固定验证 `@deepseek-ai/dsh@0.1.0-rc.7`、Cordis `4.0.1` 和 Flow2Spec Core `3.4.x`。
 
 ## 安装
 
@@ -34,7 +34,7 @@ dsh --profile <profile> --dump-config
 dsh --profile <profile>
 ```
 
-首次 Session 会以 `native-host` 模式增量建立项目基线，不会生成 `.dsh/skills`，也不会覆盖已有业务知识。
+首次 Session 会以 `native-host` 模式增量建立项目基线，不会生成 `.dsh/skills`，也不会覆盖已有业务知识。安装启用后，可在 Harness Web「设置 → 插件配置」查看 Flow2Spec 状态并检查更新。
 
 ## 能力
 
@@ -42,6 +42,7 @@ dsh --profile <profile>
 - **原生生命周期**：接入 `agent/session-start`、`agent/pre-step`、`agent/request`、`tools/pre-execute`、`tools/result` 和 `session/event`。
 - **受控工具面**：提供路由、诊断、知识库状态/检查，以及带 `planHash` 和 revision 保护的知识写入工具。
 - **协作与诊断**：解析 `developerId` 与 `.task/<developerId>/`，共享 `.Knowledge/`，并识别宿主/Core 不兼容和旧 `.dsh/skills/f2s-*` 覆盖。
+- **Web 设置卡片**：在「设置 → 插件配置」展示只读健康状态，并提供「检查更新」（只报告、不安装）。
 - **可卸载**：只注销 Provider、命令、工具和监听器，不删除项目知识、配置、任务或用户 DSH 内容。
 
 ## 命令
@@ -98,7 +99,7 @@ npm run pack:install
 
 | 插件 | Flow2Spec Core | DeepSeek Harness | Cordis | Node.js |
 | --- | --- | --- | --- | --- |
-| `1.0.2` | `3.4.x` | `0.1.0-rc.7` | `4.0.1` | `22.19+` / `24+` |
+| `1.1.0` | `3.4.x` | `0.1.0-rc.7` | `4.0.1` | `22.19+` / `24+` |
 
 升级 Harness rc 版本前必须重新运行完整 CI、Cordis 加载/卸载、Provider、路由、命令、工具和 npm pack 安装测试。
 

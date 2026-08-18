@@ -14,6 +14,7 @@ import type { UserMessage } from '@deepseek-ai/dsh-session'
 
 import { Flow2SpecDshError } from '../errors.js'
 import { resolveConfig, type ResolvedFlow2SpecPluginConfig } from '../config.js'
+import { PLUGIN_VERSION } from '../version.js'
 import {
   ProjectRuntimeManager,
   type ProjectRuntime,
@@ -84,7 +85,7 @@ export class Flow2SpecPluginRuntime {
   async status(agent: Agent): Promise<Record<string, unknown>> {
     const runtime = await this.projectForAgent(agent)
     return {
-      pluginVersion: '1.0.0',
+      pluginVersion: PLUGIN_VERSION,
       coreVersion: readCoreVersion(runtime.api.resources.root),
       compatibility: runtime.compatibility,
       projectRoot: runtime.root,

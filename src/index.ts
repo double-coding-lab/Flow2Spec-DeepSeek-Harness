@@ -1,5 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 
+import { registerSettingsCard } from './card/settings-host.js'
 import { registerCommands } from './commands.js'
 import { Config, resolveConfig, type Flow2SpecPluginConfig } from './config.js'
 import { registerHooks } from './hooks.js'
@@ -48,6 +49,7 @@ export function apply(ctx: Context, config: Flow2SpecPluginConfig = {}): () => v
   if (resolved.commands.enabled) registerCommands(ctx, runtime)
   registerTools(ctx, runtime, plans, resolved.tools)
   registerHooks(ctx, runtime, resolved, () => invalidateSkills())
+  registerSettingsCard(ctx)
 
   return () => {
     plans.clear()

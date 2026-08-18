@@ -39,8 +39,14 @@ try {
   if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') {
     throw new Error('packed plugin does not declare the Harness bundle patch')
   }
+  if (pkg.dsh?.client?.platform !== 'web') {
+    throw new Error('packed plugin does not declare the Harness client bundle')
+  }
   if (!existsSync(join(packageRoot, 'cordis.patch.yml'))) {
     throw new Error('packed plugin does not include cordis.patch.yml')
+  }
+  if (!existsSync(join(packageRoot, 'dist', 'client.js'))) {
+    throw new Error('packed plugin does not include dist/client.js')
   }
   console.log('test-package-install: ok')
 } finally {

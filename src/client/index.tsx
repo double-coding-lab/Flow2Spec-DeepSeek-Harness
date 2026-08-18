@@ -4,6 +4,12 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
 import { useEffect, useState, type ReactElement } from 'react'
 
 import type { CardStatus, CheckUpdateResult } from '../card/types.js'
+import {
+  emptyWorkspaces,
+  WorkspaceSection,
+  type ConnectionRpc,
+  type WorkspaceList,
+} from './workspace.js'
 
 export const inject = ['slots', 'locale', 'connection']
 
@@ -18,7 +24,7 @@ const CORE_NPM = 'https://www.npmjs.com/package/@double-coding/flow2spec-core'
 
 const zh: Record<string, string> = {
   title: 'Flow2Spec',
-  description: '查看已安装版本，并检查是否有新版本。',
+  description: '查看已安装版本，检查更新，并编辑各工作区的项目配置。',
   pluginVersion: '插件版本',
   coreVersion: 'Core 版本',
   openGithub: '在 GitHub 打开',
@@ -30,11 +36,57 @@ const zh: Record<string, string> = {
   failed: '检查失败',
   expand: '展开',
   collapse: '收起',
+  'workspace.section': '工作区配置',
+  'workspace.search': '搜索工作区',
+  'workspace.empty': '还没有注册的工作区。请先在侧边栏添加一个工作区。',
+  'workspace.noMatch': '没有匹配的工作区。',
+  'workspace.loading': '正在读取配置…',
+  'workspace.readFailed': '读取配置失败。',
+  'workspace.saveFailed': '保存失败。',
+  'workspace.initFailed': '初始化失败。',
+  'workspace.uninitialized': '这个工作区还没有 Flow2Spec 项目配置。',
+  'workspace.init': '初始化',
+  'workspace.initConfirmYes': '确认初始化',
+  'workspace.initConfirmNo': '取消',
+  'workspace.initRunning': '正在初始化…',
+  'workspace.initItemConfig': 'flow2spec.config.json',
+  'workspace.initItemKnowledge': '.Knowledge/',
+  'workspace.initItemDsh': '.dsh/',
+  'workspace.save': '保存',
+  'workspace.saving': '保存中…',
+  'workspace.saved': '已写入 flow2spec.config.json',
+  'workspace.discard': '放弃',
+  'workspace.dirty': '有未保存的改动',
+  'workspace.reload': '重新加载',
+  'workspace.conflict': '文件已被外部修改，请重新加载后再保存。',
+  'workspace.switchDirty': '当前工作区有未保存的改动，确定要切换吗？未保存的改动会丢失。',
+  'workspace.nextSkillHint': '改动在下次技能执行时生效，不会热更新已经在跑的会话。',
+  'group.locale': '输出语言',
+  'group.orchestration': '编排',
+  'group.tracking': '变更追踪',
+  'group.update': '更新检查',
+  'group.collaboration': '协作',
+  'field.locale': '规则与技能语言',
+  'field.localeHint': '决定这个项目里 Flow2Spec 生成的规则、技能和文档用哪种语言，不改 Harness 界面语言。',
+  'field.subAgent': '允许拆分子 agent',
+  'field.switchAgentVerification': '切换 agent 校验',
+  'field.intentRecognition': '意图识别',
+  'field.changeTrackingFeat': '新能力变更追踪',
+  'field.changeTrackingFix': '修复变更追踪',
+  'field.changeTrackingImplement': '按方案实现变更追踪',
+  'field.updateCheck': '启用知识库更新检查',
+  'field.collaborationEnabled': '按开发者隔离任务目录',
+  'field.developerId': '开发者 ID',
+  'field.developerIdHint': '留空则按 git 邮箱或用户名推断。',
+  'field.developerIdRenameWarn': '已有的 .task/<旧 id>/ 目录不会跟着改名。',
+  'field.developerIdInvalid': '只能用小写字母、数字和连字符，1–64 个字符，不能以连字符开头或结尾。',
+  'locale.zhCN': '简体中文 (zh-CN)',
+  'locale.enUS': 'English (en-US)',
 }
 
 const en: Record<string, string> = {
   title: 'Flow2Spec',
-  description: 'View installed versions and check for updates.',
+  description: 'View installed versions, check for updates, and edit each workspace config.',
   pluginVersion: 'Plugin version',
   coreVersion: 'Core version',
   openGithub: 'Open on GitHub',
@@ -46,16 +98,52 @@ const en: Record<string, string> = {
   failed: 'Check failed',
   expand: 'Expand',
   collapse: 'Collapse',
-}
-
-interface RpcResult {
-  ok: boolean
-  value?: unknown
-  error?: { message: string }
-}
-
-interface ConnectionRpc {
-  call(channel: string, endpoint: string, payload: unknown, signal?: AbortSignal): Promise<RpcResult>
+  'workspace.section': 'Workspace config',
+  'workspace.search': 'Search workspaces',
+  'workspace.empty': 'No registered workspaces yet. Add one from the sidebar first.',
+  'workspace.noMatch': 'No matching workspaces.',
+  'workspace.loading': 'Loading config…',
+  'workspace.readFailed': 'Failed to read config.',
+  'workspace.saveFailed': 'Save failed.',
+  'workspace.initFailed': 'Initialization failed.',
+  'workspace.uninitialized': 'This workspace does not have a Flow2Spec project config yet.',
+  'workspace.init': 'Initialize',
+  'workspace.initConfirmYes': 'Confirm initialize',
+  'workspace.initConfirmNo': 'Cancel',
+  'workspace.initRunning': 'Initializing…',
+  'workspace.initItemConfig': 'flow2spec.config.json',
+  'workspace.initItemKnowledge': '.Knowledge/',
+  'workspace.initItemDsh': '.dsh/',
+  'workspace.save': 'Save',
+  'workspace.saving': 'Saving…',
+  'workspace.saved': 'Written to flow2spec.config.json',
+  'workspace.discard': 'Discard',
+  'workspace.dirty': 'Unsaved changes',
+  'workspace.reload': 'Reload',
+  'workspace.conflict': 'The file changed on disk. Reload before saving.',
+  'workspace.switchDirty': 'This workspace has unsaved changes. Switch anyway and lose them?',
+  'workspace.nextSkillHint': 'Changes take effect the next time a skill runs. Running sessions are not hot-reloaded.',
+  'group.locale': 'Output language',
+  'group.orchestration': 'Orchestration',
+  'group.tracking': 'Change tracking',
+  'group.update': 'Update check',
+  'group.collaboration': 'Collaboration',
+  'field.locale': 'Skills and rules language',
+  'field.localeHint': 'Sets the language of the rules, skills and docs Flow2Spec generates in this project. It does not change the Harness interface language.',
+  'field.subAgent': 'Allow sub-agents',
+  'field.switchAgentVerification': 'Switch-agent verification',
+  'field.intentRecognition': 'Intent recognition',
+  'field.changeTrackingFeat': 'Track new-capability work',
+  'field.changeTrackingFix': 'Track fix work',
+  'field.changeTrackingImplement': 'Track implement-from-spec work',
+  'field.updateCheck': 'Enable knowledge-base update checks',
+  'field.collaborationEnabled': 'Isolate task directories per developer',
+  'field.developerId': 'Developer ID',
+  'field.developerIdHint': 'Leave empty to infer from git email or name.',
+  'field.developerIdRenameWarn': 'Existing .task/<old-id>/ directories will not be renamed.',
+  'field.developerIdInvalid': 'Use 1–64 characters of [a-z0-9-], with no leading or trailing hyphen.',
+  'locale.zhCN': '简体中文 (zh-CN)',
+  'locale.enUS': 'English (en-US)',
 }
 
 interface LocaleService {
@@ -67,7 +155,11 @@ export function apply(ctx: ClientContext): void {
   const runtime = ctx as ClientContext & Context & { locale: LocaleService; connection: { rpc: ConnectionRpc } }
   runtime.effect(() => runtime.locale.register(NS, { zh, en }))
 
-  runtime.slots.register({
+  // The slot types `locale` and `t` against the owner's namespace, while the runtime binds
+  // whichever namespace an entry passes — that is how this card ships its own dictionary.
+  // The cast keeps `register` a method call: the service proxy binds `this.ctx` at call time.
+  const slots = runtime.slots as unknown as { register: RegisterCardSlot }
+  slots.register({
     name: 'settings.plugin.item',
     key: 'flow2spec',
     locale: NS,
@@ -77,31 +169,32 @@ export function apply(ctx: ClientContext): void {
   }, Flow2SpecCard)
 }
 
-interface WorkspaceList {
-  items: readonly { path: string }[]
-}
-
 interface CardProps {
   t: (key: string) => string
   rpc: ConnectionRpc
-  useWorkspaces?: (selector: (state: WorkspaceList) => string | undefined) => string | undefined
+  useWorkspaces?: <T>(selector: (state: WorkspaceList) => T) => T
 }
 
-function emptyWorkspaces(selector: (state: WorkspaceList) => string | undefined): string | undefined {
-  return selector({ items: [] })
-}
+type RegisterCardSlot = (
+  options: {
+    name: 'settings.plugin.item'
+    key: string
+    locale: string
+    inject: () => { rpc: ConnectionRpc }
+  },
+  component: (props: CardProps) => ReactElement,
+) => () => void
 
 function Flow2SpecCard(props: CardProps): ReactElement {
-  const selectWorkspace = props.useWorkspaces ?? emptyWorkspaces
-  const cwd = selectWorkspace(state => state.items[0]?.path)
+  const selectWorkspaces = props.useWorkspaces ?? emptyWorkspaces
+  const items = selectWorkspaces(state => state.items)
+  const cwd = items[0]?.path
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState<CardStatus | undefined>(undefined)
   const [update, setUpdate] = useState<CheckUpdateResult | undefined>(undefined)
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
   const title = props.t('title')
-  // cwd is kept for checkUpdate (Core update check needs a workspace), but not shown in the card
-  const _ = cwd
 
   useEffect(() => {
     let cancelled = false
@@ -187,6 +280,7 @@ function Flow2SpecCard(props: CardProps): ReactElement {
               {checking ? props.t('checking') : props.t('checkUpdate')}
             </button>
           </div>
+          <WorkspaceSection t={props.t} rpc={props.rpc} items={items} />
         </div>
       )}
     </li>
@@ -264,7 +358,7 @@ function ensureStyles(): void {
   document.head.appendChild(tag)
 }
 
-const CARD_CSS = `
+export const CARD_CSS = `
 .f2sPc-card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;list-style:none;transition:border-color .16s,background .16s}
 .f2sPc-card:hover{border-color:var(--dsw-alias-label-dimmed)}
 .f2sPc-cardOpen{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-label-dimmed)}
@@ -289,8 +383,37 @@ const CARD_CSS = `
 .f2sPc-result,.f2sPc-failed{min-width:0;flex:1;margin:0;font-size:12px;line-height:1.5}
 .f2sPc-result{color:var(--dsw-alias-label-secondary)}
 .f2sPc-failed{color:var(--dsw-alias-label-error)}
-.f2sPc-action{appearance:none;font:inherit;cursor:pointer;border:1px solid #0000;border-radius:8px;padding:5px 14px;font-size:13px;line-height:1.5;background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-layer-3)}
+.f2sPc-action,.f2sPc-discard{appearance:none;font:inherit;cursor:pointer;border:1px solid #0000;border-radius:8px;padding:5px 14px;font-size:13px;line-height:1.5}
+.f2sPc-action{background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-layer-3)}
 .f2sPc-action:hover:not(:disabled){opacity:.92}
-.f2sPc-action:disabled{opacity:.4;cursor:default}
-.f2sPc-action:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}
+.f2sPc-discard{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);background:0 0}
+.f2sPc-discard:hover:not(:disabled){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-label-dimmed)}
+.f2sPc-action:disabled,.f2sPc-discard:disabled{opacity:.4;cursor:default}
+.f2sPc-action:focus-visible,.f2sPc-discard:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}
+.f2sPc-workspace{border-top:1px solid var(--dsw-alias-border-l2);padding:12px 0 8px;display:flex;flex-direction:column;gap:10px}
+.f2sPc-sectionTitle{margin:0;color:var(--dsw-alias-label-primary);font-size:13px;font-weight:600;line-height:1.5}
+.f2sPc-hint{margin:0;color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:1.5}
+.f2sPc-search,.f2sPc-input,.f2sPc-select{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);height:34px;font:inherit;color:var(--dsw-alias-label-primary);border-radius:8px;padding:0 12px;font-size:13px;line-height:1.5}
+.f2sPc-search{width:100%}
+.f2sPc-input,.f2sPc-select{min-width:160px;max-width:240px}
+.f2sPc-search:focus-visible,.f2sPc-input:focus-visible,.f2sPc-select:focus-visible{border-color:var(--dsw-alias-brand-primary);outline:none}
+.f2sPc-inputInvalid{border-color:var(--dsw-alias-label-error)}
+.f2sPc-picker{margin:0;padding:0;list-style:none;max-height:180px;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.f2sPc-pick{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.f2sPc-pick:hover:not(.f2sPc-pickActive){background:var(--dsw-alias-bg-layer-3)}
+.f2sPc-pickActive,.f2sPc-pickActive:hover{border-color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-3)}
+.f2sPc-pickTitle{color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;line-height:1.4}
+.f2sPc-pickPath{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:1.4;word-break:break-all}
+.f2sPc-panel,.f2sPc-form{display:flex;flex-direction:column;gap:10px}
+.f2sPc-initList{margin:0;padding-left:18px;color:var(--dsw-alias-label-secondary);font-size:12px;line-height:1.6}
+.f2sPc-group{margin:0;padding:0;border:0}
+.f2sPc-groupTitle{padding:8px 0 0;color:var(--dsw-alias-label-tertiary);font-size:12px;font-weight:600;letter-spacing:.02em}
+.f2sPc-field{flex-direction:column;gap:6px;padding:10px 0;display:flex;border-top:1px solid var(--dsw-alias-border-l2)}
+.f2sPc-fieldHead{align-items:center;justify-content:space-between;gap:12px;display:flex}
+.f2sPc-switch{appearance:none;width:36px;height:20px;border:0;border-radius:999px;background:var(--dsw-alias-border-l2);position:relative;cursor:pointer;flex:none}
+.f2sPc-switch:checked{background:var(--dsw-alias-brand-primary, var(--dsw-alias-label-primary))}
+.f2sPc-switch:before{content:"";width:16px;height:16px;border-radius:50%;background:var(--dsw-alias-bg-layer-3);position:absolute;top:2px;left:2px;transition:left .16s}
+.f2sPc-switch:checked:before{left:18px}
+.f2sPc-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
+.f2sPc-formFooter{border-top:1px solid var(--dsw-alias-border-l2);justify-content:flex-end;align-items:center;gap:8px;padding:12px 0 4px;display:flex;flex-wrap:wrap}
 `

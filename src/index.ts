@@ -49,7 +49,7 @@ export function apply(ctx: Context, config: Flow2SpecPluginConfig = {}): () => v
   if (resolved.commands.enabled) registerCommands(ctx, runtime)
   registerTools(ctx, runtime, plans, resolved.tools)
   registerHooks(ctx, runtime, resolved, () => invalidateSkills())
-  registerSettingsCard(ctx)
+  registerSettingsCard(ctx, runtime)
 
   return () => {
     plans.clear()

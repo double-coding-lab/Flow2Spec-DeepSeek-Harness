@@ -31,6 +31,27 @@ export interface CheckUpdateResult {
   error?: string
 }
 
+export type ConfigChange =
+  | { path: readonly string[]; value: string | boolean }
+  | { path: readonly string[]; remove: true }
+
+export interface ConfigReadResult {
+  initialized: boolean
+  config?: Record<string, unknown>
+  fingerprint: string
+}
+
+export interface ConfigSaveResult {
+  fingerprint: string
+  config: Record<string, unknown>
+}
+
+export interface ProjectInitCardResult extends ConfigReadResult {
+  ids: string[]
+}
+
 export interface CardRpcPayload {
   cwd?: string
+  fingerprint?: string
+  changes?: ConfigChange[]
 }

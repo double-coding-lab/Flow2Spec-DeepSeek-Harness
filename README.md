@@ -15,7 +15,7 @@
   <img src="./assets/readme/workflow.svg" width="100%" alt="Flow2Spec 在对话开始前按项目知识库做路由">
 </p>
 
-> DeepSeek Harness 目前还是开发者预览。这版插件 `1.2.0` 在 `@deepseek-ai/dsh@0.1.0-rc.7` 上验证过。
+> DeepSeek Harness 目前还是开发者预览。这版插件 `1.2.1` 在 `@deepseek-ai/dsh@0.1.0-rc.7` 与 Flow2Spec Core `3.4.1` 上验证过。
 
 ## 安装
 
@@ -111,7 +111,7 @@ npm run pack:install
 
 | 插件 | Flow2Spec Core | DeepSeek Harness | Node.js |
 | --- | --- | --- | --- |
-| `1.2.0` | `3.4.x` | `0.1.0-rc.7` | `22.19+` / `24+` |
+| `1.2.1` | `3.4.1` | `0.1.0-rc.7` | `22.19+` / `24+` |
 
 ## License
 

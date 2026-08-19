@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Flow2Spec for DeepSeek Harness</title>
+  <desc id="desc">&#x5728; DeepSeek Harness &#x7684; Agent &#x5DE5;&#x4F5C;&#x5FAA;&#x73AF;&#x4E2D;&#xFF0C;&#x5148;&#x5339;&#x914D;&#x3001;&#x9A8C;&#x8BC1;&#x5E76;&#x52A0;&#x8F7D;&#x9879;&#x76EE;&#x77E5;&#x8BC6;&#xFF0C;&#x518D;&#x6267;&#x884C;&#x539F;&#x751F; Hooks &#x4E0E;&#x53D7;&#x63A7;&#x5DE5;&#x5177;&#x3002;</desc>
+  <rect width="1200" height="360" rx="26" fill="#111516"/>
+  <path d="M56 56H1144M56 304H1144" stroke="#2b3736" stroke-width="2"/>
+  <g fill="#8ea09c" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" letter-spacing="1">
+    <text x="58" y="94">DEEPSEEK HARNESS &#x539F;&#x751F;&#x9002;&#x914D; / FLOW2SPEC CORE</text>
+    <text x="58" y="332">&#x9879;&#x76EE;&#x4E8B;&#x5B9E;&#x7EDF;&#x4E00;&#x4FDD;&#x5B58;&#x5728; .Knowledge/</text>
+  </g>
+  <g fill="#f4f1e8" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-weight="700">
+    <text x="58" y="160" font-size="46">&#x8BA9;&#x9879;&#x76EE;&#x4E8B;&#x5B9E;&#x8FDB;&#x5165;</text>
+    <text x="58" y="212" font-size="46" fill="#76e0c2">Agent &#x5DE5;&#x4F5C;&#x5FAA;&#x73AF;&#x3002;</text>
+  </g>
+  <g fill="#b9c4c0" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="20">
+    <text x="58" y="258">&#x4E00;&#x4E2A;&#x63D2;&#x4EF6;&#x5305;&#x3002;&#x539F;&#x751F; Hooks&#x3002;&#x53D7;&#x63A7;&#x77E5;&#x8BC6;&#x5199;&#x5165;&#x3002;</text>
+  </g>
+  <g transform="translate(560 112)">
+    <g fill="#1b2524" stroke="#76e0c2" stroke-width="2">
+      <rect x="0" y="0" width="126" height="62" rx="12"/>
+      <rect x="150" y="0" width="126" height="62" rx="12"/>
+      <rect x="300" y="0" width="126" height="62" rx="12"/>
+      <rect x="450" y="0" width="126" height="62" rx="12"/>
+    </g>
+    <g fill="#f4f1e8" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="22" text-anchor="middle">
+      <text x="63" y="38">&#x8BF7;&#x6C42;</text>
+      <text x="213" y="38">&#x5339;&#x914D;</text>
+      <text x="363" y="38">&#x9A8C;&#x8BC1;</text>
+      <text x="513" y="38">&#x4E0A;&#x4E0B;&#x6587;</text>
+    </g>
+    <g stroke="#f2c879" stroke-width="3" fill="none" stroke-linecap="round">
+      <path d="M126 31H150"/>
+      <path d="M276 31H300"/>
+      <path d="M426 31H450"/>
+      <path d="M576 31H616V144H498"/>
+    </g>
+    <g fill="#f2c879">
+      <path d="M146 25L156 31L146 37Z"/>
+      <path d="M296 25L306 31L296 37Z"/>
+      <path d="M446 25L456 31L446 37Z"/>
+      <path d="M508 138L498 144L508 150Z"/>
+    </g>
+    <g fill="#16201f" stroke="#b9c4c0" stroke-width="2">
+      <rect x="0" y="112" width="192" height="64" rx="12"/>
+      <rect x="216" y="112" width="192" height="64" rx="12"/>
+      <rect x="432" y="112" width="144" height="64" rx="12"/>
+    </g>
+    <g fill="#f4f1e8" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" text-anchor="middle">
+      <text x="96" y="140">&#x539F;&#x751F; Hooks</text>
+      <text x="96" y="164" fill="#8ea09c" font-size="18">&#x751F;&#x547D;&#x5468;&#x671F;</text>
+      <text x="312" y="140">&#x53D7;&#x63A7;&#x5DE5;&#x5177;</text>
+      <text x="312" y="164" fill="#8ea09c" font-size="18">planHash / revision</text>
+      <text x="504" y="140">.Knowledge/</text>
+      <text x="504" y="164" fill="#8ea09c" font-size="18">&#x5171;&#x4EAB;&#x4E8B;&#x5B9E;</text>
+    </g>
+    <path d="M192 144H216M408 144H432" stroke="#76e0c2" stroke-width="3" stroke-linecap="round"/>
+    <path d="M96 112V82H513V62" stroke="#76e0c2" stroke-width="2" stroke-dasharray="6 8" fill="none"/>
+  </g>
+</svg>

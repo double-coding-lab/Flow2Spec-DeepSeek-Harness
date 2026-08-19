@@ -1,65 +1,104 @@
 # Flow2Spec for DeepSeek Harness
 
-给 DeepSeek Harness 用的 Flow2Spec 插件。装上之后，对话会按当前项目的知识库和规则来走。
-
-同一个仓库里，Cursor、Claude、Codex 也能继续用这套 `.Knowledge/`，不用再配一份。
+<p align="center">
+  <img src="./assets/readme/workflow.svg" width="100%" alt="Flow2Spec routes project facts into the DeepSeek Harness agent loop">
+</p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness"><img src="https://img.shields.io/npm/v/%40double-coding%2Fflow2spec-deepseek-harness?logo=npm&label=npm" alt="npm version"></a>
+  <strong>Bring Flow2Spec's spec-driven workflow and project knowledge routing into DeepSeek Harness.</strong>
+</p>
+
+<p align="center">
+  <a href="./README.zh-CN.md">中文</a> ·
+  <a href="https://github.com/double-coding-lab/Flow2Spec">Flow2Spec</a> ·
+  <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness">npm</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness"><img src="https://img.shields.io/npm/v/%40double-coding%2Fflow2spec-deepseek-harness?logo=npm&label=latest" alt="npm version"></a>
   <a href="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml"><img src="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.7-202c2c" alt="DeepSeek Harness 0.1.0-rc.7">
   <img src="https://img.shields.io/badge/Node.js-22.19%2B%20%7C%2024%2B-43853d" alt="Node.js 22.19 or newer">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
 </p>
 
-<p align="center">
-  <img src="./assets/readme/workflow.svg" width="100%" alt="Flow2Spec 在对话开始前按项目知识库做路由">
-</p>
+This native plugin connects DeepSeek Harness to the same `.Knowledge/`, `f2s-*` skills, and project rules used by Flow2Spec. Each conversation can load the facts relevant to the current request instead of rediscovering the repository, while Cursor, Claude, Codex, and DeepSeek Harness continue to share one project knowledge base.
 
-> DeepSeek Harness 目前还是开发者预览。这版插件 `1.2.1` 在 `@deepseek-ai/dsh@0.1.0-rc.7` 与 Flow2Spec Core `3.4.1` 上验证过。
+> This plugin follows DeepSeek Harness releases and keeps its integration aligned with the upstream runtime.
 
-## 安装
+## Why this plugin
 
-需要 Node.js `^22.19.0` 或 `>=24`。
+Flow2Spec already provides the knowledge model and spec-driven workflows. This package is the thin native adapter that makes those capabilities available inside DeepSeek Harness:
 
-把插件装进要用的 profile，Web 一般是 `web`：
+| Capability | What it adds to Harness |
+| --- | --- |
+| Project knowledge routing | Matches each request to compact topics in `.Knowledge/` before source exploration. |
+| Native lifecycle integration | Loads Flow2Spec context through Cordis hooks without copying project skills into the profile. |
+| Skill workflows | Exposes requirement clarification, technical design, implementation, fixes, knowledge sync, and commit workflows. |
+| Controlled project tools | Provides status, routing, knowledge checks, initialization, and doctor operations. |
+| Workspace settings card | Shows installed versions, checks for updates, and edits each workspace's `flow2spec.config.json`. |
+
+Flow2Spec Core remains the single source of product behavior; this plugin only adapts it to the Harness runtime.
+
+## Install
+
+Requires Node.js `^22.19.0` or `>=24`.
+
+Install the plugin into the profile you use. The Web profile is usually named `web`:
 
 ```bash
 dsh plugin --profile web add @double-coding/flow2spec-deepseek-harness
-```
-
-然后启动：
-
-```bash
 dsh web
 ```
 
-打开一个项目、开一场对话，插件会补上 `flow2spec.config.json` 和 `.Knowledge/`（已经有的不会覆盖）。之后在「设置 → 插件配置」里能看到 Flow2Spec 卡片：看版本、检查更新，并按工作区编辑项目配置。
+Open a project and start a conversation. The plugin incrementally adds `flow2spec.config.json` and the `.Knowledge/` skeleton when they are missing; existing project knowledge is preserved.
 
-## 用起来会看到什么
+## Settings card
 
-- 命令面板里有 `/flow2spec`，以及一串 `f2s-*` 技能
-- 对话会按项目知识库选题，而不是每次全仓乱翻
-- 设置页能看当前插件 / Core 版本，检查有没有新版本（只提示，不会替你安装），也能选中一个工作区改它的 `flow2spec.config.json`
+Open **Settings → Plugins → Flow2Spec** to manage the current workspace integration.
 
-## 命令
+<p align="center">
+  <img src="./assets/readme/settings-card.webp" width="100%" alt="Flow2Spec settings card in DeepSeek Harness">
+</p>
 
-| 命令 | 作用 |
+The card provides:
+
+- installed plugin and Flow2Spec Core versions;
+- an explicit update check that reports availability without installing or restarting Harness;
+- workspace search and selection;
+- structured editing for the selected workspace's `flow2spec.config.json`;
+- conflict-safe saves and project initialization confirmation.
+
+Configuration is workspace-scoped. Changing a project here edits that project's file, not a global plugin preference.
+
+## First use
+
+Most of the time, describe the task in natural language. With intent recognition enabled, Flow2Spec can route the request into the appropriate workflow:
+
+```text
+Add batch recalculation. Retry failed items and never run the same batch twice.
+```
+
+You can also inspect or control the integration explicitly:
+
+| Command | Purpose |
 | --- | --- |
-| `/flow2spec` / `status` | 看当前项目状态 |
-| `/flow2spec init` | 手动给当前项目补齐配置和知识库目录 |
-| `/flow2spec doctor` | 体检 |
-| `/flow2spec route <一句话>` | 看这句话会命中哪个知识主题 |
-| `/flow2spec kb check` | 校验知识库 |
-| `/flow2spec kb build` | 重建知识路由后再校验 |
-| `/flow2spec update` | 检查更新 |
+| `/flow2spec` / `status` | Show the current project and integration status. |
+| `/flow2spec init` | Add missing project configuration and knowledge directories. |
+| `/flow2spec doctor` | Diagnose the current integration. |
+| `/flow2spec route <request>` | Preview the knowledge topics a request will load. |
+| `/flow2spec kb check` | Validate the project knowledge base. |
+| `/flow2spec kb build` | Rebuild knowledge routing, then validate it. |
+| `/flow2spec update` | Check for available updates. |
 
-## 项目配置
+The `f2s-*` skills remain available for explicit workflow selection.
 
-真正要改的是**项目根**的 `flow2spec.config.json`，不是 Harness 插件清单。新项目第一次对话后会自动生成，大致是这样：
+## Workspace configuration
+
+The project root `flow2spec.config.json` is the source of truth:
 
 ```json
 {
-  "locale": "zh-CN",
+  "locale": "en-US",
   "subAgent": true,
   "switchAgentVerification": true,
   "intentRecognition": true,
@@ -78,41 +117,25 @@ dsh web
 }
 ```
 
-| 字段 | 作用 |
+| Field | Purpose |
 | --- | --- |
-| `locale` | 技能和规则用中文还是英文 |
-| `subAgent` | 技能是否允许拆成子任务 |
-| `switchAgentVerification` | 落盘后要不要交叉校验 |
-| `intentRecognition` | 是否根据对话自动进入对应 `f2s-*` 技能 |
-| `changeTracking.*` | 哪些流程要写 `.task/` 任务清单 |
-| `updateCheck.enabled` | 是否检查知识库模板有没有新版本 |
-| `collaboration.enabled` | 多人协作时是否按人拆分 `.task/<id>/` |
-| `collaboration.developerId` | 任务目录名；留空则用 git 用户名/邮箱 |
+| `locale` | Language used by Flow2Spec skills, rules, and generated project documents. |
+| `subAgent` | Allows supported skills to delegate suitable subtasks. |
+| `switchAgentVerification` | Enables cross-agent verification where a skill explicitly supports it. |
+| `intentRecognition` | Routes natural-language requests into matching `f2s-*` workflows. |
+| `changeTracking.*` | Selects which workflows maintain local `.task/` checklists. |
+| `updateCheck.enabled` | Enables knowledge-template update checks. |
+| `collaboration.enabled` | Separates local task state under `.task/<developerId>/`. |
+| `collaboration.developerId` | Sets the local task directory identity; blank falls back to Git identity. |
 
-改这份文件即可，保存后下次技能执行时生效。也可以在「设置 → 插件配置」的 Flow2Spec 卡片里，按工作区搜索并编辑同一份文件。
+Edits take effect the next time a Flow2Spec workflow runs. You can edit this file directly or use the workspace settings card.
 
-## 已经在用 Flow2Spec 的项目
+## Existing Flow2Spec projects
 
-直接装插件就行，原来的 `.Knowledge/` 和配置会接着用。
+Install the plugin and keep using the existing `.Knowledge/` and `flow2spec.config.json`.
 
-如果项目里还有自己拷过的 `.dsh/skills/f2s-*`，会优先用那一份。`/flow2spec doctor` 会标出来，插件不会擅自删。核对完再自己决定要不要去掉。
-
-## 开发
-
-和 Flow2Spec 主仓一起改时，先装本地 Core，再跑检查：
-
-```bash
-npm install --no-save --package-lock=false ../Flow2Spec/packages/core
-npm run check
-npm run pack:install
-```
-
-## 兼容
-
-| 插件 | Flow2Spec Core | DeepSeek Harness | Node.js |
-| --- | --- | --- | --- |
-| `1.2.1` | `3.4.1` | `0.1.0-rc.7` | `22.19+` / `24+` |
+Legacy project copies under `.dsh/skills/f2s-*` take precedence over bundled resources. `/flow2spec doctor` reports these overrides; the plugin does not delete user files.
 
 ## License
 
-ISC
+[MIT](./LICENSE)

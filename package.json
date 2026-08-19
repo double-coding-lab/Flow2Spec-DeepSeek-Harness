@@ -18,6 +18,8 @@
   "files": [
     "dist",
     "README.md",
+    "README.zh-CN.md",
+    "assets/readme",
     "cordis.patch.yml",
     "examples"
   ],
@@ -110,5 +112,5 @@
     "cordis",
     "ai-agent"
   ],
-  "license": "ISC"
+  "license": "MIT"
 }

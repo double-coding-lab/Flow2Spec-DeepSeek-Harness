@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./README.zh-CN.md">中文</a> ·
+  <a href="./docs/README.zh-CN.md">中文</a> ·
   <a href="https://github.com/double-coding-lab/Flow2Spec">Flow2Spec</a> ·
   <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness">npm</a>
 </p>

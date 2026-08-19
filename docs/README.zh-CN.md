@@ -1,7 +1,7 @@
 # Flow2Spec for DeepSeek Harness
 
 <p align="center">
-  <img src="./assets/readme/workflow-zh.svg" width="100%" alt="Flow2Spec 将项目事实路由到 DeepSeek Harness 的 Agent 工作循环">
+  <img src="../assets/readme/workflow-zh.svg" width="100%" alt="Flow2Spec 将项目事实路由到 DeepSeek Harness 的 Agent 工作循环">
 </p>
 
 <p align="center">
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./README.md">English</a> ·
+  <a href="../README.md">English</a> ·
   <a href="https://github.com/double-coding-lab/Flow2Spec">Flow2Spec</a> ·
   <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness">npm</a>
 </p>
@@ -18,7 +18,7 @@
   <a href="https://www.npmjs.com/package/@double-coding/flow2spec-deepseek-harness"><img src="https://img.shields.io/npm/v/%40double-coding%2Fflow2spec-deepseek-harness?logo=npm&label=latest" alt="npm 版本"></a>
   <a href="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml"><img src="https://github.com/double-coding-lab/Flow2Spec-DeepSeek-Harness/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI 状态"></a>
   <img src="https://img.shields.io/badge/Node.js-22.19%2B%20%7C%2024%2B-43853d" alt="Node.js 22.19 或更高版本">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT 协议"></a>
+  <a href="../LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT 协议"></a>
 </p>
 
 这个原生插件把 DeepSeek Harness 接入 Flow2Spec 的 `.Knowledge/`、`f2s-*` 技能和项目规则。每次对话都可以先加载当前需求真正相关的项目事实，而不是重新翻完整个仓库；Cursor、Claude、Codex 和 DeepSeek Harness 也能继续共用同一份项目知识库。
@@ -57,7 +57,7 @@ dsh web
 打开 **设置 → 插件 → Flow2Spec**，即可管理当前工作区的集成配置。
 
 <p align="center">
-  <img src="./assets/readme/settings-card.webp" width="100%" alt="DeepSeek Harness 中的 Flow2Spec 设置卡片">
+  <img src="../assets/readme/settings-card.webp" width="100%" alt="DeepSeek Harness 中的 Flow2Spec 设置卡片">
 </p>
 
 卡片目前支持：
@@ -138,4 +138,4 @@ dsh web
 
 ## 协议
 
-[MIT](./LICENSE)
+[MIT](../LICENSE)

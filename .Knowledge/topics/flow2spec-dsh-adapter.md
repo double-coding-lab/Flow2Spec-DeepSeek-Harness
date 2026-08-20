@@ -1,6 +1,6 @@
 ---
 id: flow2spec-dsh-adapter
-revision: 1
+revision: 2
 summary: "DeepSeek Harness 项目级技能初始化与目录适配"
 primary: feature
 confidence: inferred
@@ -28,6 +28,8 @@ tags: [module]
 - 原生插件负责 Cordis Provider、动态知识路由、生命周期 Hooks、`/flow2spec` 命令、Core 工具和 Doctor。
 - `@double-coding/flow2spec-core` 是唯一业务能力来源；插件保持宿主适配薄层。
 - 首次 Session 默认以 `native-host` 模式增量初始化项目基线，不生成 `.dsh/skills`，不覆盖已有业务知识。
+- 已验证宿主范围写在 `src/version.ts` 的 `VERIFIED_HOST_RANGE`，随上游 DeepSeek Harness rc 升级；当前基线是 `0.1.0-rc.8`。
+- 知识路由只读取用户消息里的文本块；Harness 收图或模型看图都不进入选题。
 
 ## 旧项目兼容
 

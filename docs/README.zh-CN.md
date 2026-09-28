@@ -50,6 +50,8 @@ dsh plugin --profile web add @double-coding/flow2spec-deepseek-harness
 dsh web
 ```
 
+请填**包名**，不要填 Git 地址。Git 安装取到的是源码树，不含构建产物（`dist/`），而当前 pnpm 默认拒绝执行 git 依赖的构建脚本 —— 宿主最终只会报 `failed to import`。registry 上的包已自带 `dist/`。
+
 打开项目并开始一场对话。缺少配置时，插件会增量补齐 `flow2spec.config.json` 和 `.Knowledge/` 基础目录；已有项目知识不会被覆盖。
 
 ## 设置卡片

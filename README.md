@@ -50,6 +50,8 @@ dsh plugin --profile web add @double-coding/flow2spec-deepseek-harness
 dsh web
 ```
 
+Use the **package name**, not a Git address. A Git install fetches the source tree, which carries no build output (`dist/`), and current pnpm refuses to run build scripts for git-hosted dependencies by default — the host then only reports `failed to import`. The registry tarball already ships `dist/`.
+
 Open a project and start a conversation. The plugin incrementally adds `flow2spec.config.json` and the `.Knowledge/` skeleton when they are missing; existing project knowledge is preserved.
 
 ## Settings card

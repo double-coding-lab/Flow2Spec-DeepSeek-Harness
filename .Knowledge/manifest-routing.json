@@ -1,5 +1,5 @@
 {
-  "version": "3.3.1",
+  "version": "3.8.1",
   "knowledgeRoot": ".Knowledge",
   "matcherKey": "matcherId",
   "sourceOfTruth": ".Knowledge/manifest-routing.json",
@@ -78,8 +78,8 @@
       "summary": "DeepSeek Harness 项目级技能初始化与目录适配"
     }
   ],
-  "projectRev": 2,
-  "pkgRev": 2,
+  "projectRev": 3,
+  "pkgRev": 3,
   "topicMetadata": {
     "implement-tech-design": {
       "primary": "policy",

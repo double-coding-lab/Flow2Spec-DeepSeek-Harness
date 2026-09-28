@@ -1,6 +1,6 @@
 ---
 name: f2s-kb-upgrade
-description: 知识库模板升级技能（仅指本 SKILL）：**流程分流 V1** 须先 f2s-kb-migrate 再在流程内代跑 flow2spec init；**现行库（流程代号 V2+，含已用 .Knowledge 的 Flow2Spec npm v3.x 等项目）** 则代跑 init 以对齐 manifest-routing + matchers 分片（包内 `manifest-matchers.json` 仅作 init 合并种子，不落盘 .Knowledge）。触发：f2s-kb-upgrade、一键升级迁移、旧项目升级、知识库模板升级。注意：不要把单独的 flow2spec init 称作「升级命令」；**V1/V2+ 为技能内分流代号，不等于 npm 包主版本号**。
+description: 知识库模板升级技能（仅指本 SKILL）：**现行库（流程代号 V2+，含已用 .Knowledge 的 Flow2Spec npm v3.x 等项目）** 代跑 init 以对齐 manifest-routing + matchers 分片（包内 `manifest-matchers.json` 仅作 init 合并种子，不落盘 .Knowledge）；**非主题版本更新**（init 后 projectRev == pkgRev）可由 agent 直接代跑 flow2spec init 完成，无需进入本技能完整流程；**旧版布局（流程分流 V1）已不再内置迁移支持**（f2s-kb-migrate 已随包移除）。触发：f2s-kb-upgrade、旧项目升级、知识库模板升级。注意：不要把单独的 flow2spec init 称作「升级命令」；**V1/V2+ 为技能内分流代号，不等于 npm 包主版本号**。
 ---
 
 > 执行口径：本技能用于「代替用户跑 shell」完成 **按本 SKILL 定义的** Flow2Spec **模板与配置根对齐**；其中一步会代跑 **`flow2spec init`**，但 **`init` 不是「升级命令」**，**升级命令 / 知识库升级** 仅指 **`f2s-kb-upgrade` 本技能全流程**。
@@ -12,12 +12,12 @@ description: 知识库模板升级技能（仅指本 SKILL）：**流程分流 V
 ## 边界（避免误区）
 
 - **`flow2spec init` 不写业务知识**：不替代 `f2s-kb-add`、`f2s-kb-fix`、`f2s-kb-feat`、`f2s-kb-sync`、`f2s-kb-build` 等对 `stock-docs` / `req-docs` / `topics` 正文与业务向路由词条的维护。
-- 本技能跑通的是 **包版本下的目录、模板占位、路由结构对齐**；用户若说「把新能力写进知识库」，应引导 **`f2s-kb-sync` / `f2s-kb-add`** 等，而非仅 `f2s-kb-upgrade`。
+- 本技能跑通的是 **Template Version 下的目录、模板占位、路由结构对齐**；Core 代码版本与 Template Version 独立。用户若说「把新能力写进知识库」，应引导 **`f2s-kb-sync` / `f2s-kb-add`** 等，而非仅 `f2s-kb-upgrade`。
 - 本技能负责存量 `topicMetadata` 审计：`primary` / `tags` 仅用于治理、审计、盘点和阅读预期，不参与路由命中或执行强制性；执行强制性仍以 `AGENTS.md`、rules、skills 与 topic 正文为准。
 
 ## 包侧发版纪律（`projectRev` 必须正确 bump）
 
-**字段位置**：`templates/{zh-CN,en-US}/knowledge/manifest-routing.json` 的根级整数字段 `projectRev`（起始 `1`）。
+**字段位置**：Core 包模板 `knowledge/manifest-routing.json` 的根级整数字段 `projectRev`（起始 `1`）。
 
 **字段写入语义（必读）**：
 - **包侧**：维护者按下文规则手动 bump（包模板自身的 `projectRev` 永远是最新值）。
@@ -27,15 +27,15 @@ description: 知识库模板升级技能（仅指本 SKILL）：**流程分流 V
   - 这使「项目侧 `projectRev`」语义清晰：**「本项目已基线对齐到的包模板修订号」**，而非"上次 init 时碰到的"。
 
 **必须 bump 的修改**（每次发版至少 `+1`）：
-- 包模板 `templates/<locale>/knowledge/topics/<topic>.md` 任一文件的**正文**修改、新增、删除或改名；
-- 包模板 `templates/<locale>/knowledge/matchers/<id>.json` 的 `includeAny` 词条、`id` 或新增 / 删除 matcher 文件；
-- 包模板 `templates/<locale>/knowledge/manifest-routing.json` 的 `topicPaths` / `taskToTopicRules` / `topicDependencies` / `fallbackTopic` / `topicMetadata` 任一段修改；
-- 包模板 `templates/<locale>/knowledge/index.md` 「主题一览」节或包级章节修改。
+- 包模板 `knowledge/topics/<topic>.md` 任一文件的**正文**修改、新增、删除或改名；
+- 包模板 `knowledge/matchers/<id>.json` 的 `includeAny` 词条、`id` 或新增 / 删除 matcher 文件；
+- 包模板 `knowledge/manifest-routing.json` 的 `topicPaths` / `taskToTopicRules` / `topicDependencies` / `fallbackTopic` / `topicMetadata` 任一段修改；
+- 包模板 `knowledge/index.md` 「主题一览」节或包级章节修改。
 
 **不需要 bump 的修改**：
 - 包源码（`lib/`、`cli.js`、`scripts/`）、`AGENTS.md`、`README*` 文档；
-- `templates/<locale>/flow2spec.config.json` 默认值；
-- `templates/<locale>/rules/*` / `templates/<locale>/skills/*` 仅规则与技能正文修改（这些与主题层无关，无需触发完整流程）。
+- `flow2spec.config.json` 默认值；
+- `rules/*` / `skills/*` 仅规则与技能正文修改（这些与主题层无关，无需触发完整流程，但仍须显式提升 Template Version 以便 Hook 分发新版内容）。
 
 **判定准则一句话**：模板里 `knowledge/` 目录下 topic / matcher / manifest / index 任一**主题层产物**变了 → 必 bump；否则不动。漏 bump 会让用户的 `f2s-kb-upgrade` 跑快速路径，错过包带来的主题变更。
 
@@ -44,7 +44,7 @@ description: 知识库模板升级技能（仅指本 SKILL）：**流程分流 V
 - 两字段（`subAgent` / `switchAgentVerification`）语义以统一入口为唯一事实源：**Cursor/Claude** 读配置根 `rules/f2s-flow2spec-unified-entry.*`；**Codex** 读 `.codex/topics/f2s-flow2spec-unified-entry.md`（与上同源，`flow2spec init` 镜像）。本节不复述。
 - **子 agent 职责**（仅当 `subAgent=true`）：代跑 `flow2spec init` 等 shell 命令；仅承接命令执行，不承担知识库正文落盘。
 - **主必控**（主 agent 不可下放）：
-  1. **版本分流**：**V1** 先走 `f2s-kb-migrate` 再进入本技能；**现行库（V2+）** 直接进入 `init` 流程（含 Flow2Spec **npm v3.x** 等，只要已满足步骤 0 中「现行库」条件，均走此支，**勿**因主版本为 3 再单独设一套流程）。
+  1. **版本分流**：**V1（旧版布局）** 已不再支持自动迁移，命中即停止本技能并告知用户处理方式（见步骤 0）；**现行库（V2+）** 直接进入 `init` 流程（含 Flow2Spec **npm v3.x** 等，只要已满足步骤 0 中「现行库」条件，均走此支，**勿**因主版本为 3 再单独设一套流程）。
   2. **`init` 后重读**：从磁盘重读 `f2s-kb-upgrade/SKILL.md`，对比标识是否变化。
   3. **整技能重跑**：SKILL 有变化时，按新版字面从头再跑一轮，直至连续两轮无变化。
   4. **步骤 3b 融合**：`.Knowledge/index.md` 的维护区保留 + 包版对齐融合由主 agent 执行。
@@ -52,15 +52,21 @@ description: 知识库模板升级技能（仅指本 SKILL）：**流程分流 V
 - **写权硬约束**：`.Knowledge/index.md` **只由主 agent 落盘**，子 agent **不得触碰**；`manifest-routing.json` 同属主落盘。
 - 本 SKILL 不绑定交叉校验；落盘侧自验。
 
-## 与 `f2s-kb-migrate` 为何并存
+## 非主题版本更新：agent 可直接代跑 `init`（无需进入本技能）
 
-| 技能 | 解决的问题 |
-| --- | --- |
-| **`f2s-kb-migrate`** | **结构搬家**：`docs-index.md` / `index-doc.md`、`rules/main.md(c)`、业务 `skills/`、散落 `stock-docs`/`req-docs` → **迁入 `.Knowledge`**，落盘 `migration-report.md`、删除清单需用户确认。不代跑 npm 包升级。 |
-| **本技能 `f2s-kb-upgrade`** | **包与模板对齐**：代跑 **`flow2spec init`**，合并 **`manifest-routing.json`** 与 **`matchers/*.json`**，刷新各 agent **`rules`/`skills`**（或 Codex **`AGENTS.md`**）；`init` 另将当前语言的 **`index.md` → `.Knowledge/template/index.template.md`** 作对照快照，**`.Knowledge/index.md`** 由步骤 3b **diff 对齐**，init **不**自动改其正文。 |
+版本检查提示 Core 更新但 `templateUpdateAvailable=false` 时，agent 可**直接替用户更新 Core 并执行** `flow2spec init <已初始化的 agents>`：
 
-- **旧项目一键闭环**：**先 `f2s-kb-migrate`** → **再本技能**（`init`）。禁止仅用 `init` 代替完整迁移。
-- **已是新版 `.Knowledge` 的项目**：**只跑本技能**，勿重复 migrate。
+- `init` 后读项目侧 `.Knowledge/manifest-routing.json`：`projectRev` 与 `pkgRev` **相等**（非主题版本更新）→ 更新完成，删除 `.Knowledge/update-check.json`，**无需进入本技能**；
+- 两者**不等**（包含主题层变更）→ 进入本技能完整流程（从步骤 2c 起判定，不重复 `init`）。
+- 该路径与本技能步骤 2c「快速路径」同一判定口径；用户显式要求「完整流程 / 覆盖重置」时仍按本技能全文执行。
+- `.Knowledge/manifest-routing.json.version` 表示 Template Version；禁止拿它与 Core Version 直接比较。
+
+## 旧版布局（V1）不再内置迁移
+
+`f2s-kb-migrate` 已随包移除，旧版知识组织的自动迁移不再兼容。命中步骤 0 的 V1 信号时，本技能**停止执行**并告知用户两种处理方式：
+
+1. 使用仍内置 `f2s-kb-migrate` 的历史版本包（npm `@double-coding/flow2spec@3.4.x` 及更早）完成一次性迁移，再回到最新版本跑本技能；
+2. 手动将旧版规则、业务 skills、散落的 `stock-docs` / `req-docs` 迁入 `.Knowledge` 形态后，再跑本技能。
 
 **为何每个已配置客户端目录下都有一份同名 `SKILL.md`？**
 各客户端只加载**自身配置根**下的 `skills/`。`flow2spec init` 会向所选 agent 目录**同步落盘**当前语言对应的技能内容。
@@ -92,51 +98,42 @@ description: 知识库模板升级技能（仅指本 SKILL）：**流程分流 V
 
 ## 强制流程
 
-### 步骤 -1：全局 flow2spec 版本预检（必须，先于一切，主 agent 前台探测）
+### 步骤 -1：CLI/Core/Template 版本预检（必须，先于一切）
 
-**目的**：让「能用全局 `flow2spec` 就用全局」，只在**没装**或**版本过旧**时才动手升级；已装且已是 latest 时**完全跳过**升级动作，同时决定步骤 2 命令的**默认形态**（用 `flow2spec init` 还是 `npx @latest init`）。
-
-**动作**：主 agent 在进入步骤 0 **之前**，**顺序、前台**执行以下 3 条探测（都是纯查询，无副作用，秒级返回；无需拆子 agent）：
+主 agent 前台执行只读探测：
 
 ```bash
-# 1. 探测本机全局是否装了 flow2spec
-flow2spec --version 2>/dev/null || echo __F2S_NOT_INSTALLED__
-# 2. 查询 npm 上 latest 版本号（网络受限时可能失败，允许失败）
-npm view @double-coding/flow2spec version 2>/dev/null || echo __F2S_NPM_UNREACHABLE__
-# 3. （备用）若第 1 步返回 __F2S_NOT_INSTALLED__，用来确认 npx 可用
-command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
+flow2spec version
+flow2spec update --check
 ```
 
-**判定 3 分支**（按结果选一条，写入本轮上下文并影响步骤 2 与步骤 5 摘要）：
+按输出记录 CLI Version、Core Version、Core Range、Template Version、Protocol Version，以及 npm 最新 Core/Template（CLI 对 Core 使用 caret 兼容范围，Core 可独立发布）：
 
-| 情况 | 判定条件 | 行动 | 步骤 2 命令默认形态 |
-| --- | --- | --- | --- |
-| **A. 已装且是 latest** | 第 1 步返回版本号 `V`，第 2 步返回版本号 `L`，且 `V === L` | **完全跳过升级**，本轮不派子 agent、不跑 `npm i -g` | **`flow2spec init <agents...>`**（用全局） |
-| **B. 已装但落后** | 第 1 步返回版本号 `V`，第 2 步返回版本号 `L`，且 `V !== L`（`V < L` 或 semver 不等） | **派独立子 agent 后台跑** `npm i -g @double-coding/flow2spec@latest`（fire-and-forget，不等待，不阻塞主流程）；本轮步骤 2 仍用 `npx @latest` 保证本次拿到 latest 模板 | **`npx @double-coding/flow2spec@latest init <agents...>`** |
-| **C. 未装 or 版本无法确认** | 第 1 步命中 `__F2S_NOT_INSTALLED__`，或第 2 步命中 `__F2S_NPM_UNREACHABLE__` 且第 1 步也未拿到版本号 | 若 A 情况「已装 latest」不成立且**未装**：派独立子 agent 后台跑 `npm i -g ...@latest`（同 B）；若第 2 步失败但第 1 步已装某版本：视作 B 且无法比对 latest，**不派**升级、仅提示「latest 未知，保守用 npx」 | **`npx @double-coding/flow2spec@latest init <agents...>`** |
+| 情况 | 行动 | 步骤 2 默认命令 |
+| --- | --- | --- |
+| **A. Template 已是最新** | 若 CLI/Core 有更新，执行 `flow2spec update --cli`（CLI 及其兼容 Core 更新）后幂等 init 刷新 Hook；随后**不得直接停止**，必须先做下方「**项目侧对齐检查**」，通过后才删除缓存并停止本技能 | `flow2spec init <agents...>` |
+| **B. Template 有更新** | 执行 `flow2spec update --cli`（CLI 及其兼容 Core 一起到位），继续步骤 0 | `flow2spec init <agents...>` |
+| **C. 未安装或版本未知** | 使用 latest CLI（自动解析兼容 Core），避免 npx 复用旧版缓存 | `npx --yes <cli-package>@latest init <agents...>` |
 
-**编排（必须）**：
+预检失败时允许回退 C，但不得把 Core Version 当作 Template Version。此步骤不强制创建子 agent，也不后台安装全局包。
 
-- **A 分支**：主 agent 直接跳过所有升级动作，**不派**子 agent；本轮步骤 2 命令首选 `flow2spec init`。
-- **B / C 分支**：若确需升级（未装或版本落后），派**独立子 agent** fire-and-forget 执行 `npm i -g @double-coding/flow2spec@latest`，**不等待完成**、**不阻塞**主流程；成败均不进入 SKILL 结论。该派子**强制**执行，**不受** `flow2spec.config.json.subAgent` 字段约束（全局 npm 装包不属业务拆分范畴）。
-- **写权**：子 agent 仅执行该 shell，**不**触碰 `.Knowledge` / `manifest-routing.json` / `index.md` 等任何项目文件；写权硬约束不变。
-- **探测失败兜底**：若 3 条探测全部失败（无 shell 权限、极端受限环境），按 C 分支处理并用 `npx @latest`；此时也可以直接放弃步骤 -1、把升级留给 `cli.js` 的 `maybeAutoUpdateGlobalInstall()` 收尾兜底。
+**项目侧对齐检查（A 分支停止前必须）**：`flow2spec version` / `update --check` 对比的是**本机包 vs npm 最新**，不反映**本项目 `.Knowledge` 是否已对齐当前包模板**（典型误判：刚升级完 CLI/Core 后首次在老项目跑本技能，包侧「均为最新」但项目侧模板仍是旧版，直接停止会跳过全部升级动作）。停止前逐项确认：
 
-**与 cli.js 的关系**：
-
-- `cli.js` 内 `maybeAutoUpdateGlobalInstall()` 是 `init` 收尾兜底逻辑，**与本步不冲突**：本步在前台 init 之前完成探测/派工，cli 那段在 init 收尾时再兜一次；两次都成功就是 no-op，第一次失败第二次还能补救。
+1. Read 项目侧 `.Knowledge/manifest-routing.json`：若 `version`（项目侧 Template Version）**低于**本机包 Template Version，或 `pkgRev` / `projectRev` 字段缺失 → 项目侧未对齐，**视同 Template 更新**：继续步骤 0 → 2（init）→ 2c 判定，不得停止；
+2. 字段一致时再执行 `flow2spec kb check --strict`：若报 summary 质量 warning 或结构问题 → 转步骤 3a.7 / 3a.8 处理完再收尾；
+3. 以上均通过才允许按 A 分支停止，并在摘要中写明「项目侧已对齐（version=X，strict 通过）」。
 
 ### 步骤 0：版本判定与分流（必须，先于 init）
 
 > **命名说明**：下文 **「V1」「现行库（V2+）」** 为本技能**流程分流代号**。**npm 包为 v3.x、v4.x…** 且仓库**已**是 `.Knowledge` + `manifest-routing` 形态时，仍走 **「现行库（V2+）」** 支（仅 `init` 对齐），**不要**把 npm 主版本数字当成这里的「V2」字面限制。
 
-**V1 — 旧版知识组织（须先迁移再 init）**  
+**V1 — 旧版知识组织（不再内置迁移）**  
 命中**任一**强信号则按 V1：
 
 - 配置根仍有 **`docs-index.md` 或 `index-doc.md`**，且主要仍经 **`rules/main.md` / `rules/main.mdc`** 收口；或  
 - 业务 **`stock-docs` / `req-docs` 与规则、业务 skills** 仍以配置根旧树为主，**未**稳定落在 `.Knowledge`。
 
-**动作**：先按 **`f2s-kb-migrate`** 全流程执行（含 `migration-report`、删除清单确认），**再**进入步骤 1–5 执行 `flow2spec init`。
+**动作**：**停止本技能**，按上文「旧版布局（V1）不再内置迁移」告知用户两种处理方式（历史版本包一次性迁移 / 手动迁入 `.Knowledge`）；**不得**在 V1 布局上继续步骤 1–5。
 
 **现行库（V2+）— 已上 `.Knowledge` + 新版路由（仅包级 / 形态对齐）**  
 同时满足：
@@ -146,7 +143,7 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 
 **历史口径**：若仓库里仍有遗留 **单文件 `manifest.json`**，**不得**再当作机读事实源；机读以 **`manifest-routing.json` + `matcherPath` 指向的 `matchers/*.json`** 为准，`init` 负责与模板**合并 / 回填分片**。
 
-**动作**：直接进入步骤 1–5；**无需** migrate，除非用户明确要求重做迁移。
+**动作**：直接进入步骤 1–5。
 
 ### 步骤 1：确认本技能内 `init` 模式（必须）
 
@@ -160,10 +157,10 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 
 在目标项目根目录执行以下命令（**按步骤 -1 的分支结论选默认形态**）：
 
-1. **步骤 -1 判定为 A（已装且是 latest）**：直接用全局 CLI（**首选**）：
+1. **步骤 -1 判定为 A/B（本地 CLI/Core 可用）**：直接使用当前 CLI：
    - `flow2spec init <agents...>`
-2. **步骤 -1 判定为 B/C（未装 / 落后 / latest 未知）**：拉 npm latest 跑（**保证本次拿到最新模板**）：
-   - `npx @double-coding/flow2spec@latest init <agents...>`
+2. **步骤 -1 判定为 C**：用 latest CLI（自动解析兼容 Core 与模板）：
+   - `npx --yes <cli-package>@latest init <agents...>`
 3. 覆盖重置时：
    - 在上述命令末尾追加 `--reset-knowledge`
 4. 用户显式要求切换模板语言时：
@@ -172,7 +169,7 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 
 > `<agents...>` 示例：`cursor claude codex`。
 
-> **辅助命令（用户可自查）**：`flow2spec --version` 看当前全局版本；`flow2spec update` 触发 CLI 内置的自更新。这两条**不**替代本 SKILL 的完整流程——它们只是「让全局 CLI 保鲜」，主题层对齐仍须走本 SKILL 步骤 2 及以后。
+> **辅助命令（用户可自查）**：`flow2spec version` 查看五维版本；`flow2spec update --check` 检查更新，`flow2spec update --cli` 更新 latest CLI 及其兼容 Core，`--core` 保持当前 CLI 版本只刷新兼容 Core。这些命令不替代 Template Version 变化后的本技能完整流程。
 
 **步骤 2 完成后**：立刻执行上文 **「init 与技能自更新」**：重读 **`skills/f2s-kb-upgrade/SKILL.md`**；若有更新则**按新版字面从步骤 2c 起重跑**（**不再次 init**；避免用旧版 SKILL 做后续校验）。
 
@@ -238,7 +235,8 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
    - `includeAny` 词数超过 **12 个**；
    - topic 正文包含超过 **3 个不相干职责域**的二级标题；
    - 该 topic 同时被多种不相干任务类型频繁命中（可从 `taskToTopicRules` 和 matcher 词宽度判断）。
-7. **旧 topic frontmatter 自动补齐**：完整流程中必须由 agent 自行执行 `flow2spec kb build --fix-topics`（或等价内部能力），为缺少 frontmatter / `revision` 的存量 topic 补 `id`、`revision`、`summary`，并按 `manifest-routing.json` 补 `dependsOn` / `primary` / `confidence` / `tags`。随后执行 `flow2spec kb check --strict`；若 strict 失败，停止并在摘要中列出具体 topic / reason。不得要求用户手动逐个 topic 添加头部。
+7. **旧 topic frontmatter 自动补齐**：完整流程中必须由 agent 自行执行 `flow2spec kb build --fix-topics`（或等价内部能力），为缺少 frontmatter / `revision` 的存量 topic 补 `id`、`revision`、`summary`，并按 `manifest-routing.json` 补 `dependsOn` / `primary` / `confidence` / `tags`。随后执行 `flow2spec kb check --strict`；若失败项为 **summary 质量 warning**（缺失 / 占位 / 超长），转第 8 条补写；其余失败停止并在摘要中列出具体 topic / reason。不得要求用户手动逐个 topic 添加头部。
+8. **summary 初筛锚补写（必须，agent 才能写出语义摘要）**：对 `kb check --strict` 报出的每个 summary 质量 warning，逐个 Read 对应 `.Knowledge/topics/<id>.md` 正文，按 `f2s-topic-authoring`「初筛召回规范」补写 frontmatter `summary`（职责 + 用户会问的核心名词，软 30 字 / 硬 40 字）；全部补完后执行 `flow2spec kb build` 同步进 `rule.summary`，再跑 `flow2spec kb check --strict` 直至无 summary warning。禁止用占位文案（`<topicId>（路由摘要）` / TODO）敷衍通过。
 
 ### 步骤 3b：`index.md` 融合与 `template/index.template.md`（必须执行）
 
@@ -295,7 +293,8 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 
 输出以下信息：
 
-- **步骤 -1 全局版本预检**：分支结论（`A 已装且是 latest（跳过升级） / B 已装但落后（已派子 agent 后台升级） / C 未装或 latest 未知（已派或提示）`）+ 当前全局版本 + npm latest 版本（若拿到）
+- **步骤 -1 全局版本预检**：分支结论（`A 已装且是 latest（需附项目侧对齐结论） / B 已装但落后（已派子 agent 后台升级） / C 未装或 latest 未知（已派或提示）`）+ 当前全局版本 + npm latest 版本（若拿到）
+- **项目侧对齐检查**（A 分支时必填）：`已对齐（version=X，strict 通过，已停止）` / `未对齐（version X < 包 Y，已转完整流程）` / `strict 报 warning（已转 3a.7/3a.8）`
 - 执行命令（含 agent 与是否 reset）
 - 是否成功
 - **`projectRev` 判定**：`projectRev` X vs `pkgRev` Y → 快速路径 / 完整流程 / 字段缺失走兜底（步骤 2c）
@@ -314,8 +313,8 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 ```markdown
 ## f2s-kb-upgrade 执行结果
 
-- **步骤 -1 全局版本预检**：`A 已装且是 latest（跳过升级） / B 已装但落后（已派子 agent 后台升级 npm i -g） / C 未装或 latest 未知（已派 / 保守用 npx）`；当前版本=`<V>`，latest=`<L 或 未知>`
-- 本技能内代跑命令：`<实际执行的 flow2spec init ... 或 npx @latest init ...>`
+- **步骤 -1 全局版本预检**：`A 已装且是 latest（项目侧对齐：<结论>） / B 已装但落后（已派子 agent 后台升级 npm i -g） / C 未装或 latest 未知（已派 / 保守用 npx）`；当前版本=`<V>`，latest=`<L 或 未知>`
+- 本技能内代跑命令：`<实际执行的 flow2spec init ... 或显式 latest CLI/Core 组合 init ...>`
 - init 模式：`增量` / `覆盖重置（--reset-knowledge）`
 - 执行结果：`成功` / `失败`
 - **主题层判定**：`projectRev=<X>` vs `pkgRev=<Y>` → `快速路径（已跳过 3/3a/3b）` / `完整流程` / `字段缺失走兜底`
@@ -326,6 +325,7 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 - **index（快照 + 融合）**：`快照已复制` / `index.md 已融合` / `快速路径下未执行` / `待处理（见备注）`
 - **topicMetadata（存量审计）**：`已补齐` / `待用户确认` / `快速路径下未执行`；列出新增 / 修正 / 删除的 topicId
 - **topic frontmatter**：`已自动补齐 N 个` / `已完整无需补齐` / `strict 校验失败` / `快速路径下未执行`
+- **summary 初筛锚**：`已补写 N 个（已 kb build 同步 rule.summary）` / `已合规无需补写` / `快速路径下未执行`
 - **f2s-kb-upgrade SKILL**：`init 后无变化` / `已按新版从 2c 起重跑 N 轮（不再次 init）` / `快速路径下跳过该闭环` / `待确认`
 - **`projectRev` 回写**：`已写入项目 manifest（值=pkgRev）` / `快速路径下未执行` / `pkgRev=null 未动`
 - manifest-routing / matchers 分片：`已与模板对齐` / `已是最新` / `reset 覆盖`
@@ -346,15 +346,15 @@ command -v npx >/dev/null 2>&1 && echo __NPX_OK__ || echo __NPX_MISSING__
 
 ## 完成后自检
 
-1. 是否已做 **步骤 -1**：在进入步骤 0 前**已顺序前台执行 3 条探测**（`flow2spec --version` / `npm view ... version` / `npx` 可用性），并按 A/B/C 分支得出结论；仅在 B/C 时才**派独立子 agent**后台跑 `npm i -g @double-coding/flow2spec@latest`（不等待），A 分支**未派**任何升级动作；步骤 2 命令默认形态是否随分支选定（A→`flow2spec init`，B/C→`npx @latest init`）；摘要中已写清分支与版本对比。
-2. 是否已做 **步骤 0**：V1 未跳过 migrate、**现行库（V2+）** 未误跑 migrate。
+1. 是否已做 **步骤 -1**：执行 `flow2spec version` 与 `flow2spec update --check`，记录 CLI/Core/Core Range/Template/Protocol；有更新时是否执行 `flow2spec update --cli` 刷新 CLI 及其兼容 Core，Template 更新是否按 A/B/C 选择当前 CLI 或 latest CLI；**A 分支停止前是否完成「项目侧对齐检查」**（manifest `version`/`pkgRev` 对比 + `kb check --strict`），未对齐时是否已转完整流程而非直接停止。
+2. 是否已做 **步骤 0**：V1 已停止执行并告知用户处理方式、**现行库（V2+）** 正常进入 `init` 流程。
 3. 是否在 **步骤 2 开始前** 记录了项目侧 `projectRev`（`projectRev`），并在 **步骤 2 的 `init` 之后** 重读 `pkgRev`、执行 **步骤 2c** 判定。
 4. 是否在 **步骤 2 的 `init` 之后**重读过 **`f2s-kb-upgrade/SKILL.md`**：完整流程下有变化必须**按新版字面从步骤 2c 起重跑**（**不再次 init**）；快速路径下可跳过该闭环（见「init 与技能自更新」「快速路径例外」）。
 5. 是否已实际执行 shell 命令（而非只给建议）。
 6. 是否明确标注增量 or reset 模式。
 7. **完整流程时**：是否已处理旧主题文件清理与 `index/manifest` 引用修复（步骤 3）。
 8. **完整流程时**：是否已执行 **步骤 3a**：审计 `topicMetadata`，确保无孤儿 key / 非法 primary / 非法 confidence；缺失旧主题已按证据补 `inferred` 或列为待确认。
-9. **完整流程时**：是否已执行 `flow2spec kb build --fix-topics` 或等价内部能力，并随后执行 `flow2spec kb check --strict`，确保存量 topic 已具备 `revision`。
+9. **完整流程时**：是否已执行 `flow2spec kb build --fix-topics` 或等价内部能力，并随后执行 `flow2spec kb check --strict`，确保存量 topic 已具备 `revision`；summary 质量 warning 是否已按步骤 3a.8 补写清零并 `kb build` 同步 `rule.summary`。
 10. **完整流程时**：是否已执行 **步骤 3b**：**融合** `index.md`（**主题一览**节起至命中与执行前为项目维护区，其余同包版），并核对 `topicPaths`；**完整流程末尾**是否已**回写** 项目侧 `projectRev = pkgRev`（`pkgRev=null` 则保留原值）。
 11. **快速路径时**：步骤 3 / 3a / 3b 是否真的跳过（未做无关扫描），摘要中明确标注「快速路径下未执行」。
 12. 是否输出了 manifest 与关键路径校验结果。

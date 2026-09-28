@@ -1,4 +1,4 @@
-export const PLUGIN_VERSION = '1.3.0'
+export const PLUGIN_VERSION = '1.3.1'
 export const PLUGIN_PACKAGE_NAME = '@double-coding/flow2spec-deepseek-harness'
 
 export const VERIFIED_HOST_RANGE = '>=0.1.7-rc.2 <0.2.0'

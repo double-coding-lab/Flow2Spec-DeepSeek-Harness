@@ -1,6 +1,6 @@
 ---
 id: flow2spec-dsh-adapter
-revision: 5
+revision: 6
 summary: "DeepSeek Harness 项目级技能初始化与目录适配"
 primary: feature
 confidence: inferred
@@ -26,7 +26,7 @@ tags: [module]
 ## 能力边界
 
 - 原生插件负责 Cordis Provider、动态知识路由、生命周期 Hooks、`/flow2spec` 命令、Core 工具和 Doctor。
-- `@double-coding/flow2spec-core` 是唯一业务能力来源；插件保持宿主适配薄层。当前依赖 `^3.5.0`，能力协议仍是 `2`。
+- `@double-coding/flow2spec-core` 是唯一业务能力来源；插件保持宿主适配薄层。当前依赖 `^3.8.2`，能力协议仍是 `2`。
 - 首次 Session 默认以 `native-host` 模式增量初始化项目基线，不生成 `.dsh/skills`，不覆盖已有业务知识。
 - 已验证宿主范围写在 `src/version.ts` 的 `VERIFIED_HOST_RANGE`，随上游 DeepSeek Harness rc 升级；当前基线是 `0.1.7-rc.2`。peer 依赖按上游约定改为精确锁版本（`0.1.7-rc.2`），Cordis 用 `~4.0.4`。
 - 知识路由只读取用户消息里的文本块；Harness 收图或模型看图都不进入选题。
@@ -39,6 +39,13 @@ tags: [module]
 - 客户端设置入口从 `settings.plugin.item` 槽位迁移到 `settings.plugins.tab`（Plugins 设置区的标签页），注册选项用 `id` / `order` / `label`，`useWorkspaces` 成为该槽位的标准 prop。
 - 卡片 RPC 不走 `connection.rpc.handle()`：该 API 在本基线不可用（其内部经 connection 服务自身 context 访问 `webServer`，而该 context 未声明 inject，必然抛 `cannot get property "webServer" without inject`）。插件改为在 `ctx.webServer` 注册 `/flow2spec` 前缀路由，并用 `connection.admit` 保留信任围栏与浏览器鉴权，自行桥接 node:http ↔ Fetch 信封（`{type:'server-response', rpcId, result}`）。上游修好该 API 后可回落标准写法。
 - 卡片的「检查更新」与工作区配置读写都经这条路由；已在本基线宿主中验证状态、更新检查、配置读取与保存的完整往返。
+
+## Core 3.8.2 集成点
+
+- 公共契约与 3.5.0 完全一致：`index.d.ts` 与 `capabilities.json` 逐字节相同（`protocolVersion` 仍为 `2`，25 项能力覆盖插件要求的 20 项），插件侧无需改代码，只把依赖下限提到 `^3.8.2`。
+- 直接继承的行为变更（插件经 Core API 生效、本身不感知实现）：matcher 分片新增 `includeAll` / `excludeAny` / `excludeAll`，排除词命中即整条规则出局，task 精确命中也不例外；`taskToTopicRules[].summary` 成为初筛召回字段，唯一手写源是 topic frontmatter 的 `summary`，由 `kb build` / `kb apply` / `kb status` 机械同步，手改 manifest 会被判 routing drift。
+- `init` / `doctor` 新增 `plugin` 虚拟目标（`root: null`，只落 `.Knowledge` 与 `flow2spec.config.json`）；插件模式下缺根 `AGENTS.md` 或配置根由 error 降级为 warning。插件的 `native-host` 模式仍是 `ids = []`，行为不变。
+- `kb check` 对 topic `summary` 新增 missing / placeholder / too-long 三类 warning（默认不阻断，`--strict` 才影响结果）；本仓库 6 个模板 topic 的占位 summary 已同步为 3.8.2 模板文案。
 
 ## 旧项目兼容
 

@@ -29,7 +29,7 @@
       "topics": [
         "config-precheck"
       ],
-      "summary": "config-precheck（路由摘要）"
+      "summary": "f2s 技能执行前必读 flow2spec.config.json 的开关口径"
     },
     {
       "task": "implement-from-spec",
@@ -39,7 +39,7 @@
         "f2s-doc-routing",
         "implement-tech-design"
       ],
-      "summary": "f2s-doc-routing（路由摘要）；implement-tech-design（路由摘要）"
+      "summary": "stock-docs 与 req-docs 目录分工：需求、方案、沉淀文档放哪；按技术方案/需求文档实现代码的流程与门禁"
     },
     {
       "task": "doc-routing",
@@ -48,7 +48,7 @@
       "topics": [
         "f2s-doc-routing"
       ],
-      "summary": "f2s-doc-routing（路由摘要）"
+      "summary": "stock-docs 与 req-docs 目录分工：需求、方案、沉淀文档放哪"
     },
     {
       "task": "change-tracking",
@@ -57,7 +57,7 @@
       "topics": [
         "f2s-task"
       ],
-      "summary": "f2s-task（路由摘要）"
+      "summary": "任务清单 .task 目录的创建、续作与归档规则"
     },
     {
       "task": "req-plan",
@@ -66,7 +66,7 @@
       "topics": [
         "f2s-req-plan"
       ],
-      "summary": "f2s-req-plan（路由摘要）"
+      "summary": "需求/变更的任务规划拆解与并行实现流程"
     },
     {
       "task": "flow2spec-dsh-adapter",

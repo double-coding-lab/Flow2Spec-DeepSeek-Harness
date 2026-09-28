@@ -52,6 +52,7 @@ describe('Cordis integration', () => {
     }
 
     const messages = [{
+      id: 'msg-plugin-integration' as UserMessage['id'],
       role: 'user',
       content: [{ type: 'text', text: 'plan a Flow2Spec task' }],
       source: { kind: 'user' },

@@ -1,5 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
-import { defineTool, type JsonValue } from '@deepseek-ai/dsh-tools'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { JsonValue } from '@deepseek-ai/dsh-util-values'
 import type { KnowledgeDelta } from '@double-coding/flow2spec-core'
 
 import { KnowledgePlanStore } from './plan-store.js'

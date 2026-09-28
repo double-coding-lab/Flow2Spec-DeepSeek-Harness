@@ -1,6 +1,4 @@
 import type { Context } from '@deepseek-ai/cordis'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
 import { useEffect, useState, type ReactElement } from 'react'
 
 import type { CardStatus, CheckUpdateResult } from '../card/types.js'
@@ -34,8 +32,6 @@ const zh: Record<string, string> = {
   current: '已是最新',
   available: '发现新版本',
   failed: '检查失败',
-  expand: '展开',
-  collapse: '收起',
   'workspace.section': '工作区配置',
   'workspace.search': '搜索工作区',
   'workspace.empty': '还没有注册的工作区。请先在侧边栏添加一个工作区。',
@@ -96,8 +92,6 @@ const en: Record<string, string> = {
   current: 'Up to date',
   available: 'Update available',
   failed: 'Check failed',
-  expand: 'Expand',
-  collapse: 'Collapse',
   'workspace.section': 'Workspace config',
   'workspace.search': 'Search workspaces',
   'workspace.empty': 'No registered workspaces yet. Add one from the sidebar first.',
@@ -148,25 +142,47 @@ const en: Record<string, string> = {
 
 interface LocaleService {
   register(ns: string, dicts: Record<string, Record<string, string>>): () => void
+  bind(ns: string): (key: string) => string
 }
 
-export function apply(ctx: ClientContext): void {
+interface SlotsService {
+  inject(name: string, setup: () => () => void): () => void
+  register(
+    options: {
+      name: 'settings.plugins.tab'
+      id: string
+      order: number
+      label: () => string
+      locale: string
+      inject: () => { rpc: ConnectionRpc }
+    },
+    component: (props: CardProps) => ReactElement,
+  ): () => void
+}
+
+export function apply(ctx: Context): void {
   ensureStyles()
-  const runtime = ctx as ClientContext & Context & { locale: LocaleService; connection: { rpc: ConnectionRpc } }
+  const runtime = ctx as Context & {
+    locale: LocaleService
+    slots: SlotsService
+    connection: { rpc: ConnectionRpc }
+  }
   runtime.effect(() => runtime.locale.register(NS, { zh, en }))
 
-  // The slot types `locale` and `t` against the owner's namespace, while the runtime binds
-  // whichever namespace an entry passes — that is how this card ships its own dictionary.
-  // The cast keeps `register` a method call: the service proxy binds `this.ctx` at call time.
-  const slots = runtime.slots as unknown as { register: RegisterCardSlot }
-  slots.register({
-    name: 'settings.plugin.item',
-    key: 'flow2spec',
+  const slots = runtime.slots
+  const t = runtime.locale.bind(NS)
+  // The label thunk re-reads the active locale on every projection, so the tab
+  // title follows a language switch without re-registering.
+  slots.inject('settings.plugins.tab', () => slots.register({
+    name: 'settings.plugins.tab',
+    id: 'flow2spec',
+    order: 20,
+    label: () => t('title'),
     locale: NS,
     inject: () => ({
       rpc: runtime.connection.rpc,
     }),
-  }, Flow2SpecCard)
+  }, Flow2SpecCard))
 }
 
 interface CardProps {
@@ -175,26 +191,14 @@ interface CardProps {
   useWorkspaces?: <T>(selector: (state: WorkspaceList) => T) => T
 }
 
-type RegisterCardSlot = (
-  options: {
-    name: 'settings.plugin.item'
-    key: string
-    locale: string
-    inject: () => { rpc: ConnectionRpc }
-  },
-  component: (props: CardProps) => ReactElement,
-) => () => void
-
 function Flow2SpecCard(props: CardProps): ReactElement {
   const selectWorkspaces = props.useWorkspaces ?? emptyWorkspaces
   const items = selectWorkspaces(state => state.items)
   const cwd = items[0]?.path
-  const [open, setOpen] = useState(false)
   const [status, setStatus] = useState<CardStatus | undefined>(undefined)
   const [update, setUpdate] = useState<CheckUpdateResult | undefined>(undefined)
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
-  const title = props.t('title')
 
   useEffect(() => {
     let cancelled = false
@@ -236,54 +240,37 @@ function Flow2SpecCard(props: CardProps): ReactElement {
   ].filter(part => part !== undefined && part !== '').join(' ')
 
   return (
-    <li className={open ? 'f2sPc-card f2sPc-cardOpen' : 'f2sPc-card'}>
-      <button
-        type="button"
-        className="f2sPc-header"
-        aria-expanded={open}
-        aria-label={`${props.t(open ? 'collapse' : 'expand')}: ${title}`}
-        onClick={() => setOpen(current => !current)}
-      >
-        <span className="f2sPc-headText">
-          <span className="f2sPc-name">{title}</span>
-          <span className="f2sPc-description">{props.t('description')}</span>
-        </span>
-        <svg className={open ? 'f2sPc-chevron f2sPc-chevronOpen' : 'f2sPc-chevron'} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-          <path fill="currentColor" d="M3.2 5.2a.7.7 0 0 1 1-.05L7 7.8l2.8-2.65a.7.7 0 1 1 .9 1.06l-3.25 3.1a.7.7 0 0 1-.9 0L3.25 6.2a.7.7 0 0 1-.05-1z" />
-        </svg>
-      </button>
-      {open && (
-        <div className="f2sPc-body">
-          <dl className="f2sPc-list">
-            <Row
-              t={props.t}
-              label={props.t('pluginVersion')}
-              value={status?.pluginVersion ?? '…'}
-              github={PLUGIN_GITHUB}
-              npm={PLUGIN_NPM}
-            />
-            <Row
-              t={props.t}
-              label={props.t('coreVersion')}
-              value={status?.coreVersion ?? '…'}
-              github={CORE_GITHUB}
-              npm={CORE_NPM}
-            />
-          </dl>
-          <div className="f2sPc-footer">
-            {(error !== undefined || resultText !== undefined) && (
-              <p className={error !== undefined ? 'f2sPc-failed' : 'f2sPc-result'} role="status">
-                {error ?? resultText}
-              </p>
-            )}
-            <button type="button" className="f2sPc-action" disabled={checking} onClick={onCheck}>
-              {checking ? props.t('checking') : props.t('checkUpdate')}
-            </button>
-          </div>
-          <WorkspaceSection t={props.t} rpc={props.rpc} items={items} />
-        </div>
-      )}
-    </li>
+    <div className="f2sPc-page">
+      <h2 className="f2sPc-pageTitle">{props.t('title')}</h2>
+      <p className="f2sPc-intro">{props.t('description')}</p>
+      <dl className="f2sPc-list">
+        <Row
+          t={props.t}
+          label={props.t('pluginVersion')}
+          value={status?.pluginVersion ?? '…'}
+          github={PLUGIN_GITHUB}
+          npm={PLUGIN_NPM}
+        />
+        <Row
+          t={props.t}
+          label={props.t('coreVersion')}
+          value={status?.coreVersion ?? '…'}
+          github={CORE_GITHUB}
+          npm={CORE_NPM}
+        />
+      </dl>
+      <div className="f2sPc-footer">
+        {(error !== undefined || resultText !== undefined) && (
+          <p className={error !== undefined ? 'f2sPc-failed' : 'f2sPc-result'} role="status">
+            {error ?? resultText}
+          </p>
+        )}
+        <button type="button" className="f2sPc-action" disabled={checking} onClick={onCheck}>
+          {checking ? props.t('checking') : props.t('checkUpdate')}
+        </button>
+      </div>
+      <WorkspaceSection t={props.t} rpc={props.rpc} items={items} />
+    </div>
   )
 }
 
@@ -359,18 +346,10 @@ function ensureStyles(): void {
 }
 
 export const CARD_CSS = `
-.f2sPc-card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;list-style:none;transition:border-color .16s,background .16s}
-.f2sPc-card:hover{border-color:var(--dsw-alias-label-dimmed)}
-.f2sPc-cardOpen{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-label-dimmed)}
-.f2sPc-header{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:12px;align-items:center;gap:12px;padding:14px 16px;display:flex}
-.f2sPc-header:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}
-.f2sPc-headText{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}
-.f2sPc-name{color:var(--dsw-alias-label-primary);font-size:15px;font-weight:600;line-height:1.4}
-.f2sPc-description{color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}
-.f2sPc-chevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s}
-.f2sPc-chevronOpen{transform:rotate(180deg)}
-.f2sPc-body{border-top:1px solid var(--dsw-alias-border-l2);margin:0 16px;padding-bottom:8px}
-.f2sPc-list{margin:0}
+.f2sPc-page{flex-direction:column;display:flex}
+.f2sPc-pageTitle{margin:0;color:var(--dsw-alias-label-primary);font-size:16px;font-weight:600;line-height:1.4}
+.f2sPc-intro{margin:6px 0 0;color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}
+.f2sPc-list{margin:12px 0 0}
 .f2sPc-row{align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;display:flex}
 .f2sPc-row+.f2sPc-row{border-top:1px solid var(--dsw-alias-border-l2)}
 .f2sPc-label{color:var(--dsw-alias-label-primary);align-items:center;gap:6px;display:inline-flex;font-size:13px;font-weight:500;line-height:1.5}

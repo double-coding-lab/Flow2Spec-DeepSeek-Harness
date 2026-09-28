@@ -18,8 +18,8 @@ describe('compatibility', () => {
   it('accepts the verified host and complete protocol', () => {
     expect(inspectCompatibility({
       core: completeCore(),
-      hostVersion: '0.1.1-rc.2',
-      cordisVersion: '4.0.1',
+      hostVersion: '0.1.7-rc.2',
+      cordisVersion: '4.0.4',
     })).toMatchObject({ ok: true, missingCapabilities: [] })
   })
 
@@ -43,9 +43,9 @@ describe('compatibility', () => {
     }
   })
 
-  it('rejects the previous rc.8 baseline', () => {
+  it('rejects the previous 0.1.1-rc.2 baseline', () => {
     try {
-      assertCompatibility({ core: completeCore(), hostVersion: '0.1.0-rc.8' })
+      assertCompatibility({ core: completeCore(), hostVersion: '0.1.1-rc.2' })
       expect.fail('expected compatibility assertion to throw')
     } catch (error) {
       expect(error).toBeInstanceOf(Flow2SpecDshError)

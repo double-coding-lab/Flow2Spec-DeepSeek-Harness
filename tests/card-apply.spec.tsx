@@ -1,19 +1,23 @@
 // @vitest-environment jsdom
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context } from '@deepseek-ai/cordis'
 import { describe, expect, it } from 'vitest'
 
 import { apply, CARD_CSS } from '../src/client/index.js'
 
 interface SlotRegistration {
-  options: { name: string; key: string; locale: string; inject: () => { rpc: unknown } }
+  options: { name: string; id: string; locale: string; inject: () => { rpc: unknown } }
   boundTo: unknown
 }
 
-function fakeContext(registrations: SlotRegistration[]): ClientContext {
+function fakeContext(registrations: SlotRegistration[]): Context {
   const rpc = { call: () => Promise.resolve({ ok: true }) }
   const slots = {
     // The cordis service proxy binds `this.ctx` at call time, so the plugin must never
     // detach `register` from its service; capturing `this` here is what proves it did not.
+    inject(_name: string, setup: () => unknown): () => void {
+      setup()
+      return () => {}
+    },
     register(this: unknown, options: SlotRegistration['options']): () => void {
       registrations.push({ options, boundTo: this })
       return () => {}
@@ -21,14 +25,14 @@ function fakeContext(registrations: SlotRegistration[]): ClientContext {
   }
   const ctx = {
     slots,
-    locale: { register: () => () => {} },
+    locale: { register: () => () => {}, bind: () => (key: string) => key },
     connection: { rpc },
     effect: (setup: () => unknown) => {
       setup()
       return () => {}
     },
   }
-  return ctx as unknown as ClientContext
+  return ctx as unknown as Context
 }
 
 describe('client apply', () => {
@@ -42,14 +46,14 @@ describe('client apply', () => {
     expect(registrations[0]?.boundTo).toBe((ctx as unknown as { slots: unknown }).slots)
   })
 
-  it('registers under the settings plugin slot with its own locale namespace', () => {
+  it('registers under the Plugins settings tab slot with its own locale namespace', () => {
     const registrations: SlotRegistration[] = []
 
     apply(fakeContext(registrations))
 
     const options = registrations[0]?.options
-    expect(options?.name).toBe('settings.plugin.item')
-    expect(options?.key).toBe('flow2spec')
+    expect(options?.name).toBe('settings.plugins.tab')
+    expect(options?.id).toBe('flow2spec')
     expect(options?.locale).toBe('settings.flow2spec')
     expect(options?.inject()).toHaveProperty('rpc')
   })

@@ -7,6 +7,7 @@ import { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
+import { SessionSeq } from '@deepseek-ai/dsh-session'
 import SkillRegistry from '@deepseek-ai/dsh-skill'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { type PreToolDecision, type ToolExecution } from '@deepseek-ai/dsh-tools'
@@ -61,6 +62,7 @@ async function boot(): Promise<Harness> {
 
 function userMessage(text: string): UserMessage[] {
   return [{
+    id: `msg-${text}` as UserMessage['id'],
     role: 'user',
     content: [{ type: 'text', text }],
     source: { kind: 'user' },
@@ -91,16 +93,16 @@ afterEach(async () => {
 describe('native Cordis hooks', () => {
   it('does not create a project hooks directory', async () => {
     const { cwd, ctx, agent } = await boot()
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', { agent, source: 'startup' })
     await expect.poll(() => existsSync(join(cwd, 'flow2spec.config.json'))).toBe(true)
     expect(existsSync(join(cwd, '.dsh', 'hooks'))).toBe(false)
     expect(existsSync(join(cwd, '.dsh', 'hooks.json'))).toBe(false)
     expect(existsSync(join(cwd, '.claude', 'hooks'))).toBe(false)
   })
 
-  it('session-start initializes the project and logs a ready summary', async () => {
+  it('agent/created initializes the project and logs a ready summary', async () => {
     const { cwd, ctx, agent } = await boot()
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', { agent, source: 'startup' })
     await expect.poll(() => existsSync(join(cwd, 'flow2spec.config.json'))).toBe(true)
     await expect.poll(() => existsSync(join(cwd, '.Knowledge'))).toBe(true)
     await expect.poll(() => logs.some(line => line.includes('Flow2Spec ready'))).toBe(true)
@@ -109,7 +111,7 @@ describe('native Cordis hooks', () => {
 
   it('pre-step injects routing context, then turn/end clears the request snapshot', async () => {
     const { ctx, agent } = await boot()
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', { agent, source: 'startup' })
     const signal = new AbortController().signal
     await ctx.waterfall('agent/pre-step', {
       agent,
@@ -123,7 +125,7 @@ describe('native Cordis hooks', () => {
     expect(routed).toContain('<flow2spec_context>')
     ctx.emit('session/event', agent.session, {
       type: 'turn/end',
-      seq: 1,
+      seq: SessionSeq(1),
       time: Date.now(),
       data: { turn: 1, reason: { kind: 'completed' } },
     })
@@ -186,7 +188,7 @@ describe('native Cordis hooks', () => {
 
   it('agent/disposed releases session state without throwing', async () => {
     const { ctx, agent } = await boot()
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', { agent, source: 'startup' })
     await expect.poll(() => logs.some(line => line.includes('Flow2Spec ready'))).toBe(true)
     ctx.emit('agent/disposed', { agent })
     const assembly = await ctx.systemPrompt.assemble({

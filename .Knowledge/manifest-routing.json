@@ -28,7 +28,8 @@
       "matcherPath": ".Knowledge/matchers/m-f2s-config-precheck.json",
       "topics": [
         "config-precheck"
-      ]
+      ],
+      "summary": "config-precheck（路由摘要）"
     },
     {
       "task": "implement-from-spec",
@@ -37,7 +38,8 @@
       "topics": [
         "f2s-doc-routing",
         "implement-tech-design"
-      ]
+      ],
+      "summary": "f2s-doc-routing（路由摘要）；implement-tech-design（路由摘要）"
     },
     {
       "task": "doc-routing",
@@ -45,7 +47,8 @@
       "matcherPath": ".Knowledge/matchers/m-doc-routing.json",
       "topics": [
         "f2s-doc-routing"
-      ]
+      ],
+      "summary": "f2s-doc-routing（路由摘要）"
     },
     {
       "task": "change-tracking",
@@ -53,7 +56,8 @@
       "matcherPath": ".Knowledge/matchers/m-change-tracking.json",
       "topics": [
         "f2s-task"
-      ]
+      ],
+      "summary": "f2s-task（路由摘要）"
     },
     {
       "task": "req-plan",
@@ -61,7 +65,8 @@
       "matcherPath": ".Knowledge/matchers/m-req-plan.json",
       "topics": [
         "f2s-req-plan"
-      ]
+      ],
+      "summary": "f2s-req-plan（路由摘要）"
     },
     {
       "task": "flow2spec-dsh-adapter",
@@ -69,7 +74,8 @@
       "matcherPath": ".Knowledge/matchers/m-flow2spec-dsh-adapter.json",
       "topics": [
         "flow2spec-dsh-adapter"
-      ]
+      ],
+      "summary": "DeepSeek Harness 项目级技能初始化与目录适配"
     }
   ],
   "projectRev": 2,

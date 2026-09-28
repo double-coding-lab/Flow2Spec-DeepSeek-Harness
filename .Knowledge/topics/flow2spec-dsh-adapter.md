@@ -1,6 +1,6 @@
 ---
 id: flow2spec-dsh-adapter
-revision: 4
+revision: 5
 summary: "DeepSeek Harness 项目级技能初始化与目录适配"
 primary: feature
 confidence: inferred
@@ -28,8 +28,17 @@ tags: [module]
 - 原生插件负责 Cordis Provider、动态知识路由、生命周期 Hooks、`/flow2spec` 命令、Core 工具和 Doctor。
 - `@double-coding/flow2spec-core` 是唯一业务能力来源；插件保持宿主适配薄层。当前依赖 `^3.5.0`，能力协议仍是 `2`。
 - 首次 Session 默认以 `native-host` 模式增量初始化项目基线，不生成 `.dsh/skills`，不覆盖已有业务知识。
-- 已验证宿主范围写在 `src/version.ts` 的 `VERIFIED_HOST_RANGE`，随上游 DeepSeek Harness rc 升级；当前基线是 `0.1.1-rc.2`。 peer 依赖必须同步到同一条线，`^0.1.0-rc.x` 不会匹配 `0.1.1-rc.*`。
+- 已验证宿主范围写在 `src/version.ts` 的 `VERIFIED_HOST_RANGE`，随上游 DeepSeek Harness rc 升级；当前基线是 `0.1.7-rc.2`。peer 依赖按上游约定改为精确锁版本（`0.1.7-rc.2`），Cordis 用 `~4.0.4`。
 - 知识路由只读取用户消息里的文本块；Harness 收图或模型看图都不进入选题。
+
+## 0.1.7-rc.2 集成点
+
+- 宿主生命周期事件 `agent/session-start` 已被移除，改用 `agent/created`（payload 仍是 `{ agent, source, signal }`）。
+- `@deepseek-ai/dsh-tools` 不再透出 `JsonValue`，改从 `@deepseek-ai/dsh-util-values` 引入。
+- `@deepseek-ai/dsh-settings` 移除了 `installSettingsSection` / `settingsNamespace`；插件已不再依赖该包，插件配置表单由宿主从 Loader 条目 schema 自动派生。
+- 客户端设置入口从 `settings.plugin.item` 槽位迁移到 `settings.plugins.tab`（Plugins 设置区的标签页），注册选项用 `id` / `order` / `label`，`useWorkspaces` 成为该槽位的标准 prop。
+- 卡片 RPC 不走 `connection.rpc.handle()`：该 API 在本基线不可用（其内部经 connection 服务自身 context 访问 `webServer`，而该 context 未声明 inject，必然抛 `cannot get property "webServer" without inject`）。插件改为在 `ctx.webServer` 注册 `/flow2spec` 前缀路由，并用 `connection.admit` 保留信任围栏与浏览器鉴权，自行桥接 node:http ↔ Fetch 信封（`{type:'server-response', rpcId, result}`）。上游修好该 API 后可回落标准写法。
+- 卡片的「检查更新」与工作区配置读写都经这条路由；已在本基线宿主中验证状态、更新检查、配置读取与保存的完整往返。
 
 ## 旧项目兼容
 

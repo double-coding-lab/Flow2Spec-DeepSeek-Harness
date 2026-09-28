@@ -15,7 +15,7 @@ export function registerHooks(
   const logger = ctx.logger('flow2spec')
   const sessionAgents = new WeakMap<Session, Agent>()
 
-  ctx.on('agent/session-start', ({ agent }) => {
+  ctx.on('agent/created', ({ agent }) => {
     sessionAgents.set(agent.session, agent)
     void runtime.projectForAgent(agent).then(async project => {
       if (config.hooks.sessionSummary) {

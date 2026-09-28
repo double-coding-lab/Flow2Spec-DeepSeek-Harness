@@ -1,6 +1,6 @@
 ---
 id: flow2spec-dsh-adapter
-revision: 6
+revision: 7
 summary: "DeepSeek Harness 项目级技能初始化与目录适配"
 primary: feature
 confidence: inferred
@@ -22,6 +22,7 @@ tags: [module]
 - `cordis.patch.yml` 通过包名插入 Flow2Spec Cordis 插件行；配置未显式给出时使用插件 schema 默认值。
 - 用户使用 `dsh plugin --profile <profile> add @double-coding/flow2spec-deepseek-harness` 安装；`dsh plugin` 维护 profile 依赖与 bundle 列表。
 - 用户无需手工编辑 Harness 的 `cordis.yml`；profile 自有 patch 仅用于本地覆盖。
+- 安装路径有两条，产物必须自带构建结果：registry 包（`dist/` 随 `files` 发布）与 git 规格（`github:<org>/<repo>`）。**git 安装时 pnpm 按 `files` 字段打包，而 `dist/` 是构建产物、不在 git 中**，所以包必须声明 `prepare` 脚本；否则装出的包只有 `LICENSE` / `README.md` / `assets` / `cordis.patch.yml` / `docs` / `examples` / `package.json`，缺 `dist/index.js`，宿主只报 `failed to import`（`dsh: 1 entry did not activate ...`），不提示缺文件。desktop 端默认走 git 规格，`~/.dsh/profiles/<profile>/pnpm-lock.yaml` 里的 `codeload.github.com/...` 即该路径。
 
 ## 能力边界
 
@@ -54,5 +55,6 @@ tags: [module]
 
 ## 发布契约
 
+- `prepare` 必须保留（`npm run build`）：registry 安装不触发它，git 安装靠它产出 `dist/`。
 - npm 包版本与 Git Tag 必须一致：`package.json` 的 `x.y.z` 对应 `vx.y.z`。
 - Tag 触发 GitHub Actions 校验、npm Trusted Publishing 和 GitHub Release；首次创建 npm 包可手工引导，后续版本统一走 OIDC 工作流。

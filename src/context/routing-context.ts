@@ -53,6 +53,24 @@ export function resolveRoute(
   }
 }
 
+const PROMPT_VARIABLE_PAIR = /\{\{\s*([^{}]*?)\s*\}\}/g
+
+/**
+ * DSH interpolates every prompt context and throws on any `{{name}}` it cannot
+ * resolve, which aborts the whole turn. Knowledge topics may carry literal
+ * template placeholders (e.g. `{{FLOW2SPEC_PROJECT_CONFIG}}`), so strip the
+ * markers before injection.
+ */
+export function neutralizePromptVariables(text: string): string {
+  let out = text
+  for (let pass = 0; pass < 4; pass += 1) {
+    const next = out.replace(PROMPT_VARIABLE_PAIR, '$1')
+    if (next === out) break
+    out = next
+  }
+  return out.replace(/\{{2,}/g, run => run.split('').join(' '))
+}
+
 export function renderRoutingContext(snapshot: RoutingSnapshot | undefined): string {
   if (snapshot === undefined || snapshot.request.trim() === '') return ''
   const topics = snapshot.expanded.topics.join(', ') || '(none)'
@@ -74,7 +92,7 @@ export function renderRoutingContext(snapshot: RoutingSnapshot | undefined): str
     if (snapshot.context.truncated === true) header.push('', 'context_truncated: true')
   }
   header.push('</flow2spec_context>')
-  return header.join('\n')
+  return neutralizePromptVariables(header.join('\n'))
 }
 
 export class RoutingContextStore<TAgent extends object = object> {

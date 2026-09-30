@@ -70,8 +70,9 @@ describe('Cordis integration', () => {
       signal,
     }, async () => ({ kind: 'enter', messages }))
     const assembly = await ctx.systemPrompt.assemble({ agent, scope: agent as never, signal })
-    expect(assembly.contexts.find(context => context.name === 'flow2spec')?.text)
-      .toContain('flow2spec.config.json')
+    const promptContext = assembly.contexts.find(context => context.name === 'flow2spec')?.text
+    expect(promptContext).toContain('flow2spec.config.json')
+    expect(promptContext).not.toContain('{{')
 
     await plugin.dispose()
     expect(await ctx.skills.list({ cwd })).toEqual([])

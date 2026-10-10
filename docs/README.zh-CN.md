@@ -56,7 +56,7 @@ dsh web
 
 ## 设置卡片
 
-打开 **设置 → 插件 → Flow2Spec**，即可管理当前工作区的集成配置。
+打开 **设置**，在左侧导航选择 **Flow2Spec**，即可管理当前工作区的集成配置。
 
 <p align="center">
   <img src="../assets/readme/settings-card.webp" width="100%" alt="DeepSeek Harness 中的 Flow2Spec 设置卡片">

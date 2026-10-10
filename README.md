@@ -56,7 +56,7 @@ Open a project and start a conversation. The plugin incrementally adds `flow2spe
 
 ## Settings card
 
-Open **Settings → Plugins → Flow2Spec** to manage the current workspace integration.
+Open **Settings** and select **Flow2Spec** in the left navigation to manage the current workspace integration.
 
 <p align="center">
   <img src="./assets/readme/settings-card.webp" width="100%" alt="Flow2Spec settings card in DeepSeek Harness">

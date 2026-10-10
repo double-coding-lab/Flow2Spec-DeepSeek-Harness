@@ -16,7 +16,7 @@ describe('checkForUpdates', () => {
     ])
   })
 
-  it('suggests a plugin upgrade without installing anything', async () => {
+  it('suggests a plugin upgrade pinned to the version npm reports, without installing anything', async () => {
     resetUpdateCheckInflight()
     const result = await checkForUpdates({
       fetchNpmLatest: async (name) => {
@@ -25,8 +25,21 @@ describe('checkForUpdates', () => {
       },
     })
     expect(result.status).toBe('available')
-    expect(result.suggestion).toContain('dsh plugin')
-    expect(result.suggestion).toContain(PLUGIN_PACKAGE_NAME)
+    expect(result.suggestion).toBe(`dsh plugin --profile <profile> add ${PLUGIN_PACKAGE_NAME}@9.9.9`)
+  })
+
+  it('falls back to the bare package name when the plugin lookup failed but core moved', async () => {
+    resetUpdateCheckInflight()
+    const result = await checkForUpdates({
+      cwd: '/tmp/project',
+      fetchNpmLatest: async () => {
+        throw new Error('npm registry returned 503')
+      },
+      checkCore: async () => ({ current: '3.4.0', latest: '3.5.0', needsUpgrade: true }),
+    })
+    expect(result.status).toBe('available')
+    expect(result.suggestion).toBe(`dsh plugin --profile <profile> add ${PLUGIN_PACKAGE_NAME}`)
+    expect(result.error).toContain('503')
   })
 
   it('includes a core diff when a workspace is linked', async () => {

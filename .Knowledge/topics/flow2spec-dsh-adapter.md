@@ -1,6 +1,6 @@
 ---
 id: flow2spec-dsh-adapter
-revision: 10
+revision: 11
 summary: "DeepSeek Harness 项目级技能初始化与目录适配"
 primary: feature
 confidence: inferred
@@ -21,6 +21,7 @@ tags: [module]
 - 插件包必须在 `package.json` 声明 `dsh.bundle.patch`，并把根 `cordis.patch.yml` 纳入 npm 产物。
 - `cordis.patch.yml` 通过包名插入 Flow2Spec Cordis 插件行；配置未显式给出时使用插件 schema 默认值。
 - 用户使用 `dsh plugin --profile <profile> add @double-coding/flow2spec-deepseek-harness` 安装；`dsh plugin` 维护 profile 依赖与 bundle 列表。
+- 升级已装插件必须显式带目标版本（`dsh plugin --profile <profile> add <包名>@<版本>`）：不带版本对已有依赖是静默 no-op（`Already up to date`），不会升到 latest；pnpm 11 默认 `minimumReleaseAge=1440` 会拦当天发布的版本，显式带版本时 pnpm 自动把 `名称@版本` 追加进 profile 的 `pnpm-workspace.yaml` → `minimumReleaseAgeExclude`。卡片「检查更新」的升级建议因此带 npm 上报的 latest 版本号，保证对已安装用户可用。
 - desktop 客户端换 DSH 版本时会重建 profile：`package.json` 依赖与 `pnpm-lock.yaml` 被重置，但 `cordis.patch.yml` 里已有的 `- id: flow2spec` 行会留下。该行随即成为悬空条目，宿主报 `failed to import`；重新 `dsh plugin --profile desktop add ...` 装上包即恢复。
 - 用户无需手工编辑 Harness 的 `cordis.yml`；profile 自有 patch 仅用于本地覆盖。
 - 安装路径有两条，产物必须自带构建结果：registry 包（`dist/` 随 `files` 发布）与 git 规格（`github:<org>/<repo>`）。**git 安装时 pnpm 按 `files` 字段打包，而 `dist/` 是构建产物、不在 git 中**，所以包必须声明 `prepare` 脚本；否则装出的包只有 `LICENSE` / `README.md` / `assets` / `cordis.patch.yml` / `docs` / `examples` / `package.json`，缺 `dist/index.js`，宿主只报 `failed to import`（`dsh: 1 entry did not activate ...`），不提示缺文件。desktop 端默认走 git 规格，`~/.dsh/profiles/<profile>/pnpm-lock.yaml` 里的 `codeload.github.com/...` 即该路径。

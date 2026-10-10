@@ -6,7 +6,13 @@ import { readInstalledPackageVersion } from './status.js'
 import type { CheckUpdateResult, VersionDiff } from './types.js'
 
 const NPM_TIMEOUT_MS = 10_000
-const UPGRADE_SUGGESTION = `dsh plugin --profile <profile> add ${PLUGIN_PACKAGE_NAME}`
+
+// A bare package name is a silent no-op for an installed dependency (pnpm keeps
+// the pinned version), so the suggestion pins the version npm reports.
+function upgradeSuggestion(targetVersion: string | undefined): string {
+  const spec = targetVersion === undefined ? PLUGIN_PACKAGE_NAME : `${PLUGIN_PACKAGE_NAME}@${targetVersion}`
+  return `dsh plugin --profile <profile> add ${spec}`
+}
 
 export interface CheckUpdatesInput {
   cwd?: string
@@ -78,7 +84,7 @@ async function runCheck(input: CheckUpdatesInput): Promise<CheckUpdateResult> {
       ok: true,
       status: 'available',
       diffs,
-      suggestion: UPGRADE_SUGGESTION,
+      suggestion: upgradeSuggestion(diffs.find(diff => diff.name === 'plugin')?.latest),
       ...(errors[0] === undefined ? {} : { error: errors[0] }),
     }
   }

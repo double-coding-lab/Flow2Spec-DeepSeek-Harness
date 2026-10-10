@@ -52,6 +52,12 @@ dsh web
 
 请填**包名**，不要填 Git 地址。Git 安装取到的是源码树，不含构建产物（`dist/`），而当前 pnpm 默认拒绝执行 git 依赖的构建脚本 —— 宿主最终只会报 `failed to import`。registry 上的包已自带 `dist/`。
 
+`dsh plugin` 底层转发 `pnpm`。pnpm 11 默认带供应链安全策略：发布不满 24 小时的版本不会被解析；且对已安装的依赖，重复执行裸包名命令是静默 no-op。因此刚发布后上面这条命令拿到的仍是上一个版本，重跑也不会升级。要立即安装或升级到指定版本，需显式带上版本号（设置卡片「检查更新」会给出当前版本）：
+
+```bash
+dsh plugin --profile web add @double-coding/flow2spec-deepseek-harness@<version>
+```
+
 打开项目并开始一场对话。缺少配置时，插件会增量补齐 `flow2spec.config.json` 和 `.Knowledge/` 基础目录；已有项目知识不会被覆盖。
 
 ## 设置卡片
@@ -65,7 +71,7 @@ dsh web
 卡片目前支持：
 
 - 查看已安装的插件版本与 Flow2Spec Core 版本；
-- 主动检查是否有新版本，只报告结果，不会在插件内安装或重启 Harness；
+- 主动检查是否有新版本，并给出带版本号的可执行升级命令，不会在插件内安装或重启 Harness；
 - 搜索和选择工作区；
 - 用结构化表单编辑所选工作区的 `flow2spec.config.json`；
 - 冲突安全保存，以及带确认步骤的项目初始化。

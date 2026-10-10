@@ -52,6 +52,12 @@ dsh web
 
 Use the **package name**, not a Git address. A Git install fetches the source tree, which carries no build output (`dist/`), and current pnpm refuses to run build scripts for git-hosted dependencies by default — the host then only reports `failed to import`. The registry tarball already ships `dist/`.
 
+`dsh plugin` forwards to `pnpm`, which by default skips versions published less than 24 hours ago (a pnpm 11 supply-chain default) and treats a bare package name as a no-op for an already installed dependency. Right after a release the plain command therefore still resolves to the previous version, and re-running it never upgrades. To install or move to a specific release immediately, pin the version — the settings card's update check reports the current one:
+
+```bash
+dsh plugin --profile web add @double-coding/flow2spec-deepseek-harness@<version>
+```
+
 Open a project and start a conversation. The plugin incrementally adds `flow2spec.config.json` and the `.Knowledge/` skeleton when they are missing; existing project knowledge is preserved.
 
 ## Settings card
@@ -65,7 +71,7 @@ Open **Settings** and select **Flow2Spec** in the left navigation to manage the 
 The card provides:
 
 - installed plugin and Flow2Spec Core versions;
-- an explicit update check that reports availability without installing or restarting Harness;
+- an explicit update check that reports the available version and the exact upgrade command, without installing or restarting Harness;
 - workspace search and selection;
 - structured editing for the selected workspace's `flow2spec.config.json`;
 - conflict-safe saves and project initialization confirmation.

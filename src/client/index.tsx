@@ -149,7 +149,7 @@ interface SlotsService {
   inject(name: string, setup: () => () => void): () => void
   register(
     options: {
-      name: 'settings.plugins.tab'
+      name: 'settings.section'
       id: string
       order: number
       label: () => string
@@ -171,12 +171,13 @@ export function apply(ctx: Context): void {
 
   const slots = runtime.slots
   const t = runtime.locale.bind(NS)
-  // The label thunk re-reads the active locale on every projection, so the tab
-  // title follows a language switch without re-registering.
-  slots.inject('settings.plugins.tab', () => slots.register({
-    name: 'settings.plugins.tab',
+  // The label thunk re-reads the active locale on every projection, so the nav
+  // entry title follows a language switch without re-registering.
+  slots.inject('settings.section', () => slots.register({
+    name: 'settings.section',
     id: 'flow2spec',
-    order: 20,
+    // After the built-in sections (general 0 / models 10 / plugins 15 / agent-presets 20).
+    order: 25,
     label: () => t('title'),
     locale: NS,
     inject: () => ({
@@ -345,8 +346,18 @@ function ensureStyles(): void {
   document.head.appendChild(tag)
 }
 
+// The host maps settings-nav icons per built-in section id and registers no
+// icon for feature sections, so the Flow2Spec row — always the last entry —
+// swaps the fallback gear for the plugin glyph. A selector miss keeps the
+// host icon (fail-soft).
+//
+// The slot anchor is display:contents, so the card sits directly inside the
+// host's fixed-height scroll pane; the height:100% + flex chain below lets
+// the workspace picker fill that pane, and the picker keeps a viewport-based
+// max-height in case the chain ever stops resolving.
 export const CARD_CSS = `
-.f2sPc-page{flex-direction:column;display:flex}
+.f2sPc-page{height:100%;flex-direction:column;display:flex}
+.f2sPc-page>*{flex:none}
 .f2sPc-pageTitle{margin:0;color:var(--dsw-alias-label-primary);font-size:16px;font-weight:600;line-height:1.4}
 .f2sPc-intro{margin:6px 0 0;color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}
 .f2sPc-list{margin:12px 0 0}
@@ -369,7 +380,8 @@ export const CARD_CSS = `
 .f2sPc-discard:hover:not(:disabled){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-label-dimmed)}
 .f2sPc-action:disabled,.f2sPc-discard:disabled{opacity:.4;cursor:default}
 .f2sPc-action:focus-visible,.f2sPc-discard:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}
-.f2sPc-workspace{border-top:1px solid var(--dsw-alias-border-l2);padding:12px 0 8px;display:flex;flex-direction:column;gap:10px}
+.f2sPc-workspace{border-top:1px solid var(--dsw-alias-border-l2);padding:12px 0 8px;display:flex;flex-direction:column;gap:10px;flex:1 1 auto;min-height:0}
+.f2sPc-workspace>*{flex:none}
 .f2sPc-sectionTitle{margin:0;color:var(--dsw-alias-label-primary);font-size:13px;font-weight:600;line-height:1.5}
 .f2sPc-hint{margin:0;color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:1.5}
 .f2sPc-search,.f2sPc-input,.f2sPc-select{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);height:34px;font:inherit;color:var(--dsw-alias-label-primary);border-radius:8px;padding:0 12px;font-size:13px;line-height:1.5}
@@ -377,7 +389,8 @@ export const CARD_CSS = `
 .f2sPc-input,.f2sPc-select{min-width:160px;max-width:240px}
 .f2sPc-search:focus-visible,.f2sPc-input:focus-visible,.f2sPc-select:focus-visible{border-color:var(--dsw-alias-brand-primary);outline:none}
 .f2sPc-inputInvalid{border-color:var(--dsw-alias-label-error)}
-.f2sPc-picker{margin:0;padding:0;list-style:none;max-height:180px;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.f2sPc-picker{margin:0;padding:0;list-style:none;overflow:auto;display:flex;flex-direction:column;gap:4px;scrollbar-gutter:stable;flex:1 1 auto;min-height:120px;max-height:max(200px,calc(100vh - 400px))}
+.f2sPc-workspace.f2sPc-editing>.f2sPc-picker{flex:none;min-height:0;max-height:240px}
 .f2sPc-pick{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
 .f2sPc-pick:hover:not(.f2sPc-pickActive){background:var(--dsw-alias-bg-layer-3)}
 .f2sPc-pickActive,.f2sPc-pickActive:hover{border-color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-3)}
@@ -395,4 +408,6 @@ export const CARD_CSS = `
 .f2sPc-switch:checked:before{left:18px}
 .f2sPc-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
 .f2sPc-formFooter{border-top:1px solid var(--dsw-alias-border-l2);justify-content:flex-end;align-items:center;gap:8px;padding:12px 0 4px;display:flex;flex-wrap:wrap}
+[class*="_navList"]>[class*="_navCell"]:last-child>[class*="_navIcon"]{display:none}
+[class*="_navList"]>[class*="_navCell"]:last-child::before{content:"";flex:none;width:16px;height:16px;background-color:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='3.9' cy='12.1' r='1.9'/%3E%3Ccircle cx='12.1' cy='3.9' r='1.9'/%3E%3Cpath d='M3.9 10.2V8.65A2.15 2.15 0 0 1 6.05 6.5H10.2'/%3E%3C/svg%3E") center / contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='3.9' cy='12.1' r='1.9'/%3E%3Ccircle cx='12.1' cy='3.9' r='1.9'/%3E%3Cpath d='M3.9 10.2V8.65A2.15 2.15 0 0 1 6.05 6.5H10.2'/%3E%3C/svg%3E") center / contain no-repeat}
 `

@@ -112,41 +112,44 @@ export function WorkspaceSection(props: {
   }
 
   return (
-    <section className="f2sPc-workspace" aria-label={props.t('workspace.section')}>
+    <section
+      className={selected === undefined ? 'f2sPc-workspace' : 'f2sPc-workspace f2sPc-editing'}
+      aria-label={props.t('workspace.section')}
+    >
       <h3 className="f2sPc-sectionTitle">{props.t('workspace.section')}</h3>
       {props.items.length === 0 ? (
         <p className="f2sPc-hint">{props.t('workspace.empty')}</p>
       ) : (
         <>
-          {props.items.length > 5 && (
-            <input
-              className="f2sPc-search"
-              type="search"
-              value={query}
-              onChange={event => setQuery(event.target.value)}
-              placeholder={props.t('workspace.search')}
-              aria-label={props.t('workspace.search')}
-            />
+          <input
+            className="f2sPc-search"
+            type="search"
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            placeholder={props.t('workspace.search')}
+            aria-label={props.t('workspace.search')}
+          />
+          {filtered.length > 0 && (
+            <ul className="f2sPc-picker" role="listbox" aria-label={props.t('workspace.section')}>
+              {filtered.map(item => {
+                const active = item.workspaceId === selectedId
+                return (
+                  <li key={item.workspaceId}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={active ? 'f2sPc-pick f2sPc-pickActive' : 'f2sPc-pick'}
+                      onClick={() => select(item.workspaceId)}
+                    >
+                      <span className="f2sPc-pickTitle">{item.title}</span>
+                      <span className="f2sPc-pickPath">{item.path}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           )}
-          <ul className="f2sPc-picker" role="listbox" aria-label={props.t('workspace.section')}>
-            {filtered.map(item => {
-              const active = item.workspaceId === selectedId
-              return (
-                <li key={item.workspaceId}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={active}
-                    className={active ? 'f2sPc-pick f2sPc-pickActive' : 'f2sPc-pick'}
-                    onClick={() => select(item.workspaceId)}
-                  >
-                    <span className="f2sPc-pickTitle">{item.title}</span>
-                    <span className="f2sPc-pickPath">{item.path}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
           {filtered.length === 0 && <p className="f2sPc-hint">{props.t('workspace.noMatch')}</p>}
         </>
       )}

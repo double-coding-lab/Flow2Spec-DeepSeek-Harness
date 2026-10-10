@@ -104,6 +104,12 @@ async function selectLocale(value: string): Promise<void> {
   })
 }
 
+function section(): HTMLElement {
+  const node = host.querySelector<HTMLElement>('section.f2sPc-workspace')
+  if (node === null) throw new Error('workspace section is not rendered')
+  return node
+}
+
 function readsFor(cwd: string): RpcCall[] {
   return calls.filter(call => call.endpoint === 'card.config.read' && call.payload['cwd'] === cwd)
 }
@@ -161,6 +167,50 @@ describe('workspace picker selection', () => {
 
     expect(readsFor('E:/repo-a')).toHaveLength(1)
     expect(localeSelect().value).toBe('zh-CN')
+  })
+
+  it('switches the section into the editing layout only while a pick is selected', async () => {
+    await mount()
+    expect(section().className.split(' ')).not.toContain('f2sPc-editing')
+
+    await click(picks()[0] as HTMLElement)
+
+    expect(section().className.split(' ')).toContain('f2sPc-editing')
+  })
+})
+
+function searchBox(): HTMLInputElement {
+  const node = host.querySelector<HTMLInputElement>('.f2sPc-search')
+  if (node === null) throw new Error('search box is not rendered')
+  return node
+}
+
+async function typeSearch(text: string): Promise<void> {
+  const node = searchBox()
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+  await act(async () => {
+    setter?.call(node, text)
+    node.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+}
+
+describe('workspace search', () => {
+  it('renders the search box even for a short list', async () => {
+    await mount()
+
+    expect(searchBox()).not.toBeNull()
+  })
+
+  it('filters picks as the query narrows and reports an empty match', async () => {
+    await mount()
+
+    await typeSearch('repo-b')
+    expect(picks().map(pick => pick.textContent)).toEqual(['repo-bE:/repo-b'])
+
+    await typeSearch('no-such-workspace')
+    expect(picks()).toHaveLength(0)
+    expect(host.querySelector('.f2sPc-picker')).toBeNull()
+    expect(host.querySelector('.f2sPc-hint')?.textContent).toBe('workspace.noMatch')
   })
 })
 

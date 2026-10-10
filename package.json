@@ -1,6 +1,6 @@
 {
   "name": "@double-coding/flow2spec-deepseek-harness",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Native DeepSeek Harness plugin for Flow2Spec",
   "type": "module",
   "main": "./dist/index.js",

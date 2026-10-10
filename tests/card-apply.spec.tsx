@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { apply, CARD_CSS } from '../src/client/index.js'
 
 interface SlotRegistration {
-  options: { name: string; id: string; locale: string; inject: () => { rpc: unknown } }
+  options: { name: string; id: string; order: number; locale: string; inject: () => { rpc: unknown } }
   boundTo: unknown
 }
 
@@ -46,14 +46,15 @@ describe('client apply', () => {
     expect(registrations[0]?.boundTo).toBe((ctx as unknown as { slots: unknown }).slots)
   })
 
-  it('registers under the Plugins settings tab slot with its own locale namespace', () => {
+  it('registers a top-level settings section with its own locale namespace', () => {
     const registrations: SlotRegistration[] = []
 
     apply(fakeContext(registrations))
 
     const options = registrations[0]?.options
-    expect(options?.name).toBe('settings.plugins.tab')
+    expect(options?.name).toBe('settings.section')
     expect(options?.id).toBe('flow2spec')
+    expect(options?.order).toBe(25)
     expect(options?.locale).toBe('settings.flow2spec')
     expect(options?.inject()).toHaveProperty('rpc')
   })
@@ -69,6 +70,52 @@ describe('workspace picker styles', () => {
     expect(hover?.style.getPropertyValue('border-color') ?? '').toBe('')
     expect(hoverIdle?.style.getPropertyValue('background')).toContain('--dsw-alias-bg-layer-3')
     expect(active.some(rule => rule.style.getPropertyValue('border-color').includes('--dsw-alias-label-primary'))).toBe(true)
+  })
+})
+
+describe('settings nav icon override', () => {
+  it('hides the host fallback icon on the Flow2Spec nav row', () => {
+    const hide = parseStyleRules(CARD_CSS)
+      .find(rule => rule.selectorText.includes('_navCell') && rule.selectorText.includes('navIcon'))
+    expect(hide?.style.getPropertyValue('display')).toBe('none')
+  })
+
+  it('paints the plugin glyph with a mask that inherits the nav text color', () => {
+    expect(CARD_CSS).toContain('[class*="_navList"]>[class*="_navCell"]:last-child::before')
+    expect(CARD_CSS).toContain('background-color:currentColor')
+    expect(CARD_CSS).toContain('-webkit-mask:url("data:image/svg+xml')
+    expect(CARD_CSS).toContain('mask:url("data:image/svg+xml')
+  })
+})
+
+describe('workspace picker pane fill', () => {
+  const rule = (prefix: string): string => {
+    const line = CARD_CSS.split('\n').find(item => item.startsWith(prefix))
+    if (line === undefined) throw new Error(`rule ${prefix} is not in CARD_CSS`)
+    return line
+  }
+
+  it('stretches the page and section so the picker can fill the host scroll pane', () => {
+    expect(rule('.f2sPc-page{')).toContain('height:100%')
+    expect(rule('.f2sPc-workspace{')).toContain('flex:1 1 auto')
+    expect(rule('.f2sPc-workspace{')).toContain('min-height:0')
+    expect(rule('.f2sPc-picker{')).toContain('flex:1 1 auto')
+    expect(rule('.f2sPc-picker{')).toContain('min-height:120px')
+  })
+
+  it('protects the rows above and below the picker from flex shrinkage', () => {
+    expect(rule('.f2sPc-page>*{')).toContain('flex:none')
+    expect(rule('.f2sPc-workspace>*{')).toContain('flex:none')
+  })
+
+  it('caps the picker back at 240px once a workspace form is open', () => {
+    const editing = rule('.f2sPc-workspace.f2sPc-editing>.f2sPc-picker{')
+    expect(editing).toContain('flex:none')
+    expect(editing).toContain('max-height:240px')
+  })
+
+  it('keeps a bounded viewport fallback in case the host pane chain stops resolving', () => {
+    expect(rule('.f2sPc-picker{')).toContain('max-height:max(200px,calc(100vh - 400px))')
   })
 })
 
